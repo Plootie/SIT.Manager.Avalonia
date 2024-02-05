@@ -1,0 +1,76 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SIT.Manager.Avalonia.Views.SettingsPage"
+			 Background="{DynamicResource ApplicationPageBackgroundThemeBrush}">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<ScrollViewer Grid.Row="0">
+			<StackPanel Margin="10">
+				<!--Launcher settings-->
+				<TextBlock Text="Launcher Settings" Margin="5" VerticalAlignment="Center"/>
+				<Border CornerRadius="8" BorderBrush="Gray" BorderThickness="1" Padding="10">
+					<StackPanel>
+						<CheckBox Content="Close Launcher After Game Launch" ToolTip.Tip="Closes the launcher automatically after opening the game."/>
+						<CheckBox Content="Look For Updates" ToolTip.Tip="Automatically look for updates when opening the launcher."/>
+					</StackPanel>
+				</Border>
+				
+				<!--EFT Settings-->
+				<TextBlock Text="EFT Settings" Margin="5" VerticalAlignment="Center"/>
+				<Border CornerRadius="8" BorderBrush="Gray" BorderThickness="1" Padding="10">
+					<StackPanel>
+						<StackPanel Orientation="Horizontal" >
+							<TextBlock Text="EFT Path:" Margin="0,0,10,0" VerticalAlignment="Center"/>
+							<TextBox Watermark="EFT Install Path..." Margin="0,0,10,0" MinWidth="425" MaxWidth="425" IsReadOnly="True"/>
+							<Button Name="ChangeInstallButton" Content="Change" Margin="0,0,10,0" ToolTip.Tip="Change the EFT Install Path."/>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="EFT Version:" Margin="0,10,10,0" VerticalAlignment="Center"/>
+							<TextBlock Text="TBF" Margin="0,10,10,0" VerticalAlignment="Center"/>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="SIT Version:" Margin="0,10,10,0" VerticalAlignment="Center"/>
+							<TextBlock Text="TBF" Margin="0,10,10,0" VerticalAlignment="Center"/>
+						</StackPanel>
+					</StackPanel>
+				</Border>
+				
+				<!--SPT-AKI Settings-->
+				<TextBlock Text="SPT-AKI Settings" Margin="5" VerticalAlignment="Center"/>
+				<Border CornerRadius="8" BorderBrush="Gray" BorderThickness="1" Padding="10">
+					<StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="SPT-AKI Path:"  VerticalAlignment="Center"/>
+							<TextBox Watermark="SPT-AKI Install Path..." Margin="5" MinWidth="397" MaxWidth="425" IsReadOnly="True"/>
+							<Button Name="ChangeAkiServerPath" Content="Change" Margin="5" ToolTip.Tip="Change the SPT-AKI Install Path."/>
+						</StackPanel>
+					</StackPanel>
+				</Border>
+				
+				<!--Server Console-->
+				<TextBlock Text="Server Console" Margin="5" VerticalAlignment="Center"/>
+				<Border CornerRadius="8" BorderBrush="Gray" BorderThickness="1" Padding="10">
+					<StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="Font family:" Margin="0,0,10,0" VerticalAlignment="Center"/>
+							<TextBlock Name="ConsoleFontFamilyPreview" Margin="0,0,10,0" VerticalAlignment="Center" FontFamily="{Binding ConsoleFontFamily}" Text="{Binding ConsoleFontFamily}"/>
+							<Button Name="ConsoleFamilyFontChange" Content="Change"/>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="Font Color:" Margin="0,10,10,0" VerticalAlignment="Center"/>
+							<Rectangle Name="ConsoleColorPreview" Width="30" Height="15" Margin="0,10,10,0" Fill="White"/>
+							<Button Name="ColorChangeButton" Content="Change" Margin="0,10,0,0"/>
+						</StackPanel>
+					</StackPanel>
+				</Border>
+			</StackPanel>
+		</ScrollViewer>
+	</Grid>
+</UserControl>

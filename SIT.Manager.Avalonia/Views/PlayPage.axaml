@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SIT.Manager.Avalonia.Views.PlayPage">
+	<Grid Margin="10" >
+		<StackPanel>
+			<!--Address box-->
+			<Label Content="Address" Margin="10 10 10 0" FontFamily="{StaticResource BenderFont}" FontStyle="Oblique"/>
+			<TextBox Name="AddressBox" Margin="10 5 10 10" Width="300" HorizontalAlignment="Left" Watermark="Enter Server Address..."/>
+			<!--Username box-->
+			<Label Content="Username" Margin="10 10 10 0" FontFamily="{StaticResource BenderFont}" FontStyle="Oblique"/>
+			<TextBox Name="UsernameBox" Margin="10 5 10 10" Width="150" HorizontalAlignment="Left" Watermark="Enter Username..."/>
+			<!--Password box-->
+			<Label Content="Password" Margin="10 10 10 0" FontFamily="{StaticResource BenderFont}" FontStyle="Oblique"/>
+			<TextBox Name="PasswordBox" Margin="10 5 10 10" Width="150" HorizontalAlignment="Left" PasswordChar="●" Watermark="Enter Password..."/>
+			<CheckBox Name="RememberMeCheck" Content="Remember Me" Margin="10" IsChecked="False"/>
+			<Button Name="ConnectButton" Content="Connect" ToolTip.Tip="Connect to the server" Margin="10"/>
+		</StackPanel>
+	</Grid>
+</UserControl>
