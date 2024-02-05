@@ -72,5 +72,10 @@
 				</Border>
 			</StackPanel>
 		</ScrollViewer>
+
+		<StackPanel Margin="0,5" Orientation="Horizontal" Grid.Row="1">
+			<TextBlock Margin="10" Text="Manager Version: "/>
+			<Label Content="TBF" VerticalAlignment="Center" Padding="5"/>
+		</StackPanel>
 	</Grid>
 </UserControl>
