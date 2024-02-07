@@ -22,8 +22,8 @@
 	<!--Create a row for the title bar and reserve the rest for the content-->
 	<Grid RowDefinitions="30,*">
 		<!--Title bar elements-->
-		<Grid ColumnDefinitions="Auto,*" IsHitTestVisible="False" Background="Black">
-			<Image Name="TitleBarIco" Grid.Column="0" VerticalAlignment="Center" Source="/Assets/Stay-In-Tarkov-512.ico" Width="18" Margin="5,0,10,0"/>
+		<Grid Name="CustomTitleBarGrid" ColumnDefinitions="Auto,*" IsHitTestVisible="False" Background="Black">
+			<Image Grid.Column="0" VerticalAlignment="Center" Source="/Assets/Stay-In-Tarkov-512.ico" Width="18" Margin="5,0,10,0"/>
 			<TextBlock Grid.Column="1" VerticalAlignment="Center" FontFamily="{StaticResource BenderFont}">SIT Manager</TextBlock>
 		</Grid>
 
