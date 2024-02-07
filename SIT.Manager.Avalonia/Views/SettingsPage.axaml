@@ -2,11 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="clr-namespace:SIT.Manager.Avalonia.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SIT.Manager.Avalonia.Views.SettingsPage"
-			 Background="{DynamicResource ApplicationPageBackgroundThemeBrush}">
-	<Da
-	
+			 Background="{DynamicResource ApplicationPageBackgroundThemeBrush}"	 
+			 x:DataType="vm:SettingsPageViewModel">
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="*"/>
@@ -62,7 +62,7 @@
 					<StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="Font family:" Margin="0,0,10,0" VerticalAlignment="Center"/>
-							<TextBlock Name="ConsoleFontFamilyPreview" Margin="0,0,10,0" VerticalAlignment="Center" FontFamily="{Binding ConsoleFontFamily}" Text="{Binding ConsoleFontFamily}"/>
+							<TextBlock Name="ConsoleFontFamilyPreview" Margin="0,0,10,0" VerticalAlignment="Center" FontFamily="Consolas" Text="Consolas"/>
 							<Button Name="ConsoleFamilyFontChange" Content="Change"/>
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">

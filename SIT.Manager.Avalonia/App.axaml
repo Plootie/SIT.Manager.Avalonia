@@ -11,8 +11,5 @@
 
 	<Application.Resources>
 		<FontFamily x:Key="BenderFont">/Assets/Fonts/Bender.otf#Bender</FontFamily>
-		<DataTemplate x:Key="BoxHeaderTemplate">
-			<TextBlock Text="{Binding}" FontFamily="{StaticResource BenderFont}" FontWeight="Bold"/>
-		</DataTemplate>
 	</Application.Resources>
 </Application>
