@@ -31,7 +31,11 @@ public sealed partial class App : Application
     private static IServiceProvider ConfigureServices() {
         var services = new ServiceCollection();
 
-        services.AddSingleton<ManagerConfigService, ManagerConfigService>();
+        // Services
+        services.AddSingleton<IManagerConfigService, ManagerConfigService>();
+
+        // Viewmodels
+        services.AddTransient<SettingsPageViewModel>();
 
         return services.BuildServiceProvider();
     }

@@ -19,8 +19,12 @@
 				<TextBlock Text="Launcher Settings" Margin="5" VerticalAlignment="Center"/>
 				<Border CornerRadius="8" BorderBrush="Gray" BorderThickness="1" Padding="10">
 					<StackPanel>
-						<CheckBox Content="Close Launcher After Game Launch" ToolTip.Tip="Closes the launcher automatically after opening the game."/>
-						<CheckBox Content="Look For Updates" ToolTip.Tip="Automatically look for updates when opening the launcher."/>
+						<CheckBox Content="Close Launcher After Game Launch" 
+								  ToolTip.Tip="Closes the launcher automatically after opening the game."
+								  IsChecked="{Binding CloseAfterLaunch, Mode=TwoWay}"/>
+						<CheckBox Content="Look For Updates" 
+								  ToolTip.Tip="Automatically look for updates when opening the launcher."
+								  IsChecked="{Binding LookForUpdates, Mode=TwoWay}"/>
 					</StackPanel>
 				</Border>
 				
