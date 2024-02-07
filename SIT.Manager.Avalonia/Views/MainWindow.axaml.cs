@@ -14,4 +14,9 @@ public partial class MainWindow : Window
             CustomTitleBarGrid.IsVisible = false;
         }
     }
+
+    private void Window_Closed(object? sender, EventArgs e)
+    {
+        //TODO: Shutdown aki server here once implemented
+    }
 }

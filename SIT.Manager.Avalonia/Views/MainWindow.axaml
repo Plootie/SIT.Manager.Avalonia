@@ -17,7 +17,8 @@
 		WindowStartupLocation="CenterScreen"
 		TransparencyLevelHint="AcrylicBlur"
 		Background="Transparent"
-		ExtendClientAreaToDecorationsHint="True">
+		ExtendClientAreaToDecorationsHint="True"
+		Closed="Window_Closed">
 	
 	<!--Create a row for the title bar and reserve the rest for the content-->
 	<Grid RowDefinitions="30,*">
