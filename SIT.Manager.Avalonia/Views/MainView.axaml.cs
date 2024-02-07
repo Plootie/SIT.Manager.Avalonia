@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Media.Animation;
+using System.IO;
+using Avalonia.Controls.ApplicationLifetimes;
 
 namespace SIT.Manager.Avalonia.Views;
 
@@ -29,9 +31,29 @@ public partial class MainView : UserControl
         { "Settings", typeof(SettingsPage) },
     };
 
+    //TODO: Add a confirmation to this. Not happy with it just starting the updater on click
     private void UpdateButton_Click(object? sender, RoutedEventArgs e)
     {
-
+        //TODO: Add a way to update for linux users
+        if (OperatingSystem.IsWindows())
+        {
+            string workingDir = AppContext.BaseDirectory;
+            //TODO: Change this to use a const
+            string updaterPath = Path.Combine(workingDir, "SIT.Manager.Updater.exe");
+            if (File.Exists(updaterPath))
+            {
+                Process.Start(updaterPath);
+                IApplicationLifetime? lifetime = Application.Current?.ApplicationLifetime;
+                if(lifetime != null && lifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
+                {
+                    desktopLifetime.Shutdown();
+                }
+                else
+                {
+                    Environment.Exit(0);
+                }
+            }
+        }
     }
 
     //I hate this so much, Please if someone knows of a better way to do this make a pull request. Even microsoft docs recommend this heathenry
