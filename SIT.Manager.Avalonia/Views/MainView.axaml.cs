@@ -9,6 +9,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Threading;
+using FluentAvalonia.UI.Media.Animation;
 
 namespace SIT.Manager.Avalonia.Views;
 
@@ -46,13 +47,13 @@ public partial class MainView : UserControl
 
         if(navView.MenuItems.FirstOrDefault() is NavigationViewItem item){
             navView.SelectedItem = item;
-            NavigateToPage(item);
+            NavigateToPage(item, true);
         }
     }
 
-    private bool NavigateToPage(NavigationViewItem navItem)
-        => NavigateToPage(navItem.Tag?.ToString() ?? string.Empty);
-    private bool NavigateToPage(string tagName)
+    private bool NavigateToPage(NavigationViewItem navItem, bool suppressTransition = false)
+        => NavigateToPage(navItem.Tag?.ToString() ?? string.Empty, suppressTransition);
+    private bool NavigateToPage(string tagName, bool suppressTransition = false)
     {
         if (NavMenuLookup.TryGetValue(tagName, out Type? page))
         {
@@ -61,7 +62,8 @@ public partial class MainView : UserControl
             else
             {
                 currentPage = page;
-                return ContentFrame.Navigate(page);
+
+                return ContentFrame.Navigate(page, null, suppressTransition ? new SuppressNavigationTransitionInfo() : null);
             }
         }
         else
