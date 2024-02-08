@@ -27,9 +27,9 @@ namespace SIT.Manager.Avalonia.Services
             };
 
             try {
-                string currentDir = AppContext.BaseDirectory;
-                if (File.Exists(currentDir + @"\ManagerConfig.json")) {
-                    string json = File.ReadAllText(currentDir + @"\ManagerConfig.json");
+                string managerConfigPath = Path.Combine(AppContext.BaseDirectory, "ManagerConfig.json");
+                if (File.Exists(managerConfigPath)) {
+                    string json = File.ReadAllText(managerConfigPath);
                     _config = JsonSerializer.Deserialize<ManagerConfig>(json, options) ?? new();
                 }
             }
@@ -46,8 +46,8 @@ namespace SIT.Manager.Avalonia.Services
                 WriteIndented = true
             };
 
-            string currentDir = AppContext.BaseDirectory;
-            Debug.WriteLine(currentDir);
+            string managerConfigPath = Path.Combine(AppContext.BaseDirectory, "ManagerConfig.json");
+            Debug.WriteLine(managerConfigPath);
 
             if (SaveAccount == false) {
                 ManagerConfig newLauncherConfig = _config;
@@ -55,10 +55,10 @@ namespace SIT.Manager.Avalonia.Services
                 newLauncherConfig.Password = string.Empty;
 
                 string json = JsonSerializer.Serialize(newLauncherConfig, options);
-                File.WriteAllText(currentDir + "ManagerConfig.json", json);
+                File.WriteAllText(managerConfigPath, json);
             }
             else {
-                File.WriteAllText(currentDir + "ManagerConfig.json", JsonSerializer.Serialize(_config, options));
+                File.WriteAllText(managerConfigPath, JsonSerializer.Serialize(_config, options));
             }
         }
 
