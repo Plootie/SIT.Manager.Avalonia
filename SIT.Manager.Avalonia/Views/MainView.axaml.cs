@@ -37,9 +37,8 @@ public partial class MainView : UserControl
         //TODO: Add a way to update for linux users
         if (OperatingSystem.IsWindows())
         {
-            string workingDir = AppContext.BaseDirectory;
             //TODO: Change this to use a const
-            string updaterPath = Path.Combine(workingDir, "SIT.Manager.Updater.exe");
+            string updaterPath = Path.Combine(AppContext.BaseDirectory, "SIT.Manager.Updater.exe");
             if (File.Exists(updaterPath))
             {
                 Process.Start(updaterPath);
