@@ -32,7 +32,14 @@ public sealed partial class App : Application
         var services = new ServiceCollection();
 
         // Services
+        services.AddSingleton<IFolderPickerService>(x => {
+            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow?.StorageProvider is not { } provider) {
+                return new FolderPickerService(new MainWindow());
+            }
+            return new FolderPickerService(desktop.MainWindow);
+        });
         services.AddSingleton<IManagerConfigService, ManagerConfigService>();
+        services.AddSingleton<IVersionService, VersionService>();
 
         // Viewmodels
         services.AddTransient<SettingsPageViewModel>();

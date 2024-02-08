@@ -1,4 +1,5 @@
-﻿using SIT.Manager.Avalonia.Models;
+﻿using SIT.Manager.Avalonia.Converters;
+using SIT.Manager.Avalonia.Models;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -19,11 +20,17 @@ namespace SIT.Manager.Avalonia.Services
         }
 
         private void Load() {
+            var options = new JsonSerializerOptions() {
+                Converters = {
+                    new ColorJsonConverter()
+                }
+            };
+
             try {
                 string currentDir = AppContext.BaseDirectory;
                 if (File.Exists(currentDir + @"\ManagerConfig.json")) {
                     string json = File.ReadAllText(currentDir + @"\ManagerConfig.json");
-                    _config = JsonSerializer.Deserialize<ManagerConfig>(json) ?? new();
+                    _config = JsonSerializer.Deserialize<ManagerConfig>(json, options) ?? new();
                 }
             }
             catch (Exception ex) {
@@ -32,6 +39,13 @@ namespace SIT.Manager.Avalonia.Services
         }
 
         public void Save(bool SaveAccount = false) {
+            var options = new JsonSerializerOptions() {
+                Converters = {
+                    new ColorJsonConverter()
+                },
+                WriteIndented = true
+            };
+
             string currentDir = AppContext.BaseDirectory;
             Debug.WriteLine(currentDir);
 
@@ -40,11 +54,11 @@ namespace SIT.Manager.Avalonia.Services
                 newLauncherConfig.Username = string.Empty;
                 newLauncherConfig.Password = string.Empty;
 
-                string json = JsonSerializer.Serialize(newLauncherConfig, new JsonSerializerOptions { WriteIndented = true });
+                string json = JsonSerializer.Serialize(newLauncherConfig, options);
                 File.WriteAllText(currentDir + "ManagerConfig.json", json);
             }
             else {
-                File.WriteAllText(currentDir + "ManagerConfig.json", JsonSerializer.Serialize(_config, new JsonSerializerOptions { WriteIndented = true }));
+                File.WriteAllText(currentDir + "ManagerConfig.json", JsonSerializer.Serialize(_config, options));
             }
         }
 

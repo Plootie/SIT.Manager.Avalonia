@@ -18,7 +18,7 @@ namespace SIT.Manager.Avalonia.Models
         public bool AcceptedModsDisclaimer { get; set; } = false;
         public string ModCollectionVersion { get; set; } = string.Empty;
         public Dictionary<string, string> InstalledMods { get; set; } = [];
-        public string ConsoleFontColor { get; set; } = Colors.LightBlue.ToString();
+        public Color ConsoleFontColor { get; set; } = Colors.LightBlue;
         public string ConsoleFontFamily { get; set; } = "Consolas";
     }
 }
