@@ -81,7 +81,7 @@
 
 		<StackPanel Margin="0,5" Orientation="Horizontal" Grid.Row="1">
 			<TextBlock Margin="10" Text="Manager Version: "/>
-			<SelectableTextBlock Text="TBF" VerticalAlignment="Center" Padding="5"/>
+			<SelectableTextBlock Text="{Binding ManagerVersionString}" VerticalAlignment="Center" Padding="5"/>
 		</StackPanel>
 	</Grid>
 </UserControl>
