@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:sty="using:FluentAvalonia.Styling"
              x:Class="SIT.Manager.Avalonia.App"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Dark">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 	<Application.Resources>
 		<FontFamily x:Key="BenderFont">/Assets/Fonts/Bender.otf#Bender</FontFamily>
@@ -18,12 +18,7 @@
 		<sty:FluentAvaloniaTheme />
 
 		<Style Selector="SelectableTextBlock">
-			<Setter Property="Foreground" Value="{StaticResource TextControlForeground}"/>
 			<Setter Property="SelectionBrush" Value="{StaticResource TextControlSelection}"/>
-		</Style>
-		
-		<Style Selector="TextBlock">
-			<Setter Property="Foreground" Value="{StaticResource TextControlForeground}"/>
-		</Style>
+		</Style>	
     </Application.Styles>
 </Application>
