@@ -34,6 +34,7 @@ namespace SIT.Manager.Avalonia.ViewModels
         [ObservableProperty]
         private string _startServerButtonTextBlock = "Start Server";
 
+        // TODO load the console font family and color into the item repeater from settings somehow
         [ObservableProperty]
         private string _consoleFontFamily;
 
@@ -107,6 +108,11 @@ namespace SIT.Manager.Avalonia.ViewModels
                         }
                 }
             });
+        }
+
+        [RelayCommand]
+        private void EditServerConfig() {
+            // TODO here so VS picks it up as it doesn't in XAML -- this literally does nothing and as far as I can see was never implemented in the current manager either
         }
 
         [RelayCommand]

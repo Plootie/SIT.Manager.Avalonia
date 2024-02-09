@@ -27,7 +27,6 @@
 								   SizeChanged="ConsoleLogItemsRepeater_SizeChanged" >
 						<ItemsRepeater.ItemTemplate>
 							<DataTemplate>
-								<!-- TODO load the console font family and color into here from settings somehow -->
 								<TextBlock Text="{Binding}"
 										   TextWrapping="WrapWithOverflow"/>
 							</DataTemplate>
@@ -46,9 +45,12 @@
 						<ui:SymbolIcon Name="StartServerButtonSymbolIcon" Symbol="{Binding StartServerButtonSymbolIcon}" Margin="0 0 10 0"/>
 						<TextBlock Name="StartServerButtonTextBlock" Text="{Binding StartServerButtonTextBlock}"/>
 					</StackPanel>
-				</Button>
-				<!-- TODO this literally does nothing and as far as I can see was never implemented in the current manager either -->
-				<Button Name="EditServerConfigButton" HorizontalAlignment="Left" Margin="0 0 5 0" ToolTip.Tip="Edit Server">
+				</Button>			
+				<Button Name="EditServerConfigButton" 
+						HorizontalAlignment="Left" 
+						Margin="0 0 5 0" 
+						ToolTip.Tip="Edit Server"
+						Command="{Binding EditServerConfigCommand}">
 					<StackPanel Orientation="Horizontal">
 						<ui:SymbolIcon Symbol="Edit" Margin="0 0 10 0"/>
 						<TextBlock Text="Edit Server Config"/>
