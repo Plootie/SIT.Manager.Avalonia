@@ -22,7 +22,9 @@
 				</Grid.RowDefinitions>
 				<TextBlock Margin="10 5 0 0" Grid.Row="0" Name="ConsoleOutput" Text="Console Output" FontSize="16" FontFamily="{StaticResource BenderFont}" FontWeight="Bold"/>
 				<ScrollViewer Name="ConsoleLogScroller" Grid.Row="1" CornerRadius="8" BorderBrush="Gray" BorderThickness="1" Margin="10" HorizontalScrollBarVisibility="Disabled" Padding="6 0" Background="#222">
-					<ItemsRepeater ItemsSource="{Binding ConsoleOutput, Mode=OneWay}" >
+					<ItemsRepeater Name="ConsoleLogItemRepeater" 
+								   ItemsSource="{Binding ConsoleOutput, Mode=OneWay}"
+								   SizeChanged="ConsoleLogItemsRepeater_SizeChanged" >
 						<ItemsRepeater.ItemTemplate>
 							<DataTemplate>
 								<!-- TODO load the console font family and color into here from settings somehow -->
