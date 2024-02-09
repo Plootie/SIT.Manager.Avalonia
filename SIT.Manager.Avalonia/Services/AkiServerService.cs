@@ -1,129 +1,103 @@
-﻿namespace SIT.Manager.Avalonia.Services
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
+
+namespace SIT.Manager.Avalonia.Services
 {
     public class AkiServerService : IAkiServerService
     {
-        /* TODO
-public static class AkiServer
-    {
-        #region events
-        public static event OutputDataReceivedEventHandler? OutputDataReceived;
-        public delegate void OutputDataReceivedEventHandler(object sender, DataReceivedEventArgs e);
-
-        public static event StateChangedEventHandler? RunningStateChanged;
-        public delegate void StateChangedEventHandler(RunningState runningState);
-        #endregion
-
-        #region fields
+        private const string SERVER_EXE = "Aki.Server.exe";
 
         public enum RunningState
         {
-            NOT_RUNNING,
-            RUNNING,
-            STOPPED_UNEXPECTEDLY
+            NotRunning,
+            Running,
+            StoppedUnexpectedly
         }
 
-        public static Process? Process;
+        private readonly IManagerConfigService _configService;
 
-        public static string ExeName
-        {
-            get => "Aki.Server.exe";
+        private Process? _serverProcess;
+        private bool _stopRequest = false;
+
+        private string ServerDirectory => !string.IsNullOrEmpty(_configService.Config.AkiServerPath) ? _configService.Config.AkiServerPath : string.Empty;
+
+        public string ServerFilePath => !string.IsNullOrEmpty(ServerDirectory) ? Path.Combine(ServerDirectory, SERVER_EXE) : string.Empty;
+
+        public RunningState State { get; private set; } = RunningState.NotRunning;
+
+        public event EventHandler<DataReceivedEventArgs>? OutputDataReceived;
+        public event EventHandler<RunningState>? RunningStateChanged;
+
+        public AkiServerService(IManagerConfigService configService) {
+            _configService = configService;
         }
 
-        public static string FilePath
-        {
-            get => App.ManagerConfig.AkiServerPath != null ? Path.Combine(App.ManagerConfig.AkiServerPath, ExeName) : "";
+        private void ExitedEvent(object? sender, EventArgs e) {
+            if (State == RunningState.Running && !_stopRequest) {
+                State = RunningState.StoppedUnexpectedly;
+            }
+            else {
+                State = RunningState.NotRunning;
+            }
+
+            _stopRequest = false;
+            RunningStateChanged?.Invoke(this, State);
         }
 
-        public static string Directory
-        {
-            get => App.ManagerConfig.AkiServerPath != null ? App.ManagerConfig.AkiServerPath : "";
-        }
+        public bool IsUnhandledInstanceRunning() {
+            Process[] akiServerProcesses = Process.GetProcessesByName(SERVER_EXE.Replace(".exe", ""));
 
-        private static RunningState _state = RunningState.NOT_RUNNING;
-        public static RunningState State
-        {
-            get => _state;
-        }
-
-        private static bool stopRequest = false;
-
-        #endregion
-
-        public static void Start()
-        {
-            if (_state == RunningState.RUNNING)
-                return;
-
-            Process = new Process();
-
-            Process.StartInfo.FileName = FilePath;
-            Process.StartInfo.WorkingDirectory = Directory;
-            Process.StartInfo.UseShellExecute = false;
-            Process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
-            Process.StartInfo.RedirectStandardOutput = true;
-            Process.StartInfo.CreateNoWindow = true;
-            Process.EnableRaisingEvents = true;
-            Process.OutputDataReceived += new DataReceivedEventHandler((sender, e) => OutputDataReceivedEvent(sender, e));
-            Process.Exited += new EventHandler((sender, e) => ExitedEvent(sender, e));
-
-            Process.Start();
-            Process.BeginOutputReadLine();
-
-            _state = RunningState.RUNNING;
-
-            RunningStateChanged?.Invoke(_state);
-        }
-
-        public static void Stop()
-        {
-            if (_state == RunningState.NOT_RUNNING || Process == null || Process.HasExited)
-                return;
-
-            stopRequest = true;
-
-            // this allows to gracefully close a console app.
-            Win32.CloseConsoleProgram(Process);
-        }
-
-        public static bool IsUnhandledInstanceRunning()
-        {
-            Process[] akiServerProcesses = Process.GetProcessesByName(ExeName.Replace(".exe", ""));
-
-            if (akiServerProcesses.Length > 0)
-            {
-                if (Process == null || Process.HasExited)
+            if (akiServerProcesses.Length > 0) {
+                if (_serverProcess == null || _serverProcess.HasExited) {
                     return true;
+                }
 
-                foreach (Process akiServerProcess in akiServerProcesses)
-                {
-                    if (Process.Id != akiServerProcess.Id)
+                foreach (Process akiServerProcess in akiServerProcesses) {
+                    if (_serverProcess.Id != akiServerProcess.Id) {
                         return true;
+                    }
                 }
             }
 
             return false;
         }
 
-        private static void OutputDataReceivedEvent(object sender, DataReceivedEventArgs e)
-        {
-            OutputDataReceived?.Invoke(sender, e);
-        }
-
-        private static void ExitedEvent(object? sender, EventArgs e)
-        {
-            if (_state == RunningState.RUNNING && !stopRequest)
-            {
-                _state = RunningState.STOPPED_UNEXPECTEDLY;
-            }
-            else
-            {
-                _state = RunningState.NOT_RUNNING;
+        public void Start() {
+            if (State == RunningState.Running) {
+                return;
             }
 
-            stopRequest = false;
-            RunningStateChanged?.Invoke(_state);
+            _serverProcess = new Process();
+
+            _serverProcess.StartInfo.FileName = ServerFilePath;
+            _serverProcess.StartInfo.WorkingDirectory = ServerDirectory;
+            _serverProcess.StartInfo.UseShellExecute = false;
+            _serverProcess.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+            _serverProcess.StartInfo.RedirectStandardOutput = true;
+            _serverProcess.StartInfo.CreateNoWindow = true;
+            _serverProcess.EnableRaisingEvents = true;
+            _serverProcess.OutputDataReceived += new DataReceivedEventHandler((sender, e) => OutputDataReceived?.Invoke(sender, e));
+            _serverProcess.Exited += new EventHandler((sender, e) => ExitedEvent(sender, e));
+
+            _serverProcess.Start();
+            _serverProcess.BeginOutputReadLine();
+
+            State = RunningState.Running;
+
+            RunningStateChanged?.Invoke(this, State);
         }
-    }
-        */
+
+        public void Stop() {
+            if (State == RunningState.NotRunning || _serverProcess == null || _serverProcess.HasExited) {
+                return;
+            }
+
+            _stopRequest = true;
+
+            // Attempt to gracefully close the process
+            _serverProcess.Close();
+        }
     }
 }
