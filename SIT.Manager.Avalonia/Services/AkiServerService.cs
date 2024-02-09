@@ -96,8 +96,8 @@ namespace SIT.Manager.Avalonia.Services
 
             _stopRequest = true;
 
-            // Attempt to gracefully close the process
-            _serverProcess.Close();
+            // Kill the server process
+            _serverProcess.Kill();
         }
     }
 }
