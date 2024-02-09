@@ -22,8 +22,8 @@ namespace SIT.Manager.Avalonia.ViewModels
     {
         private const int CONSOLE_LINE_LIMIT = 50;
 
-        [GeneratedRegex("(\\[\\d{1,2}m)|(\\[\\d{1}[a-zA-Z])|(\\[\\d{1};\\d{1}[a-zA-Z])")]
-        private static partial Regex ConsoleTextOutputFilterRegex();
+        [GeneratedRegex("\\x1B(?:[@-Z\\\\-_]|\\[[0-?]*[ -/]*[@-~])")]
+        private static partial Regex ConsoleTextRemoveANSIFilterRegex();
 
         private readonly IAkiServerService _akiServerService;
         private readonly IManagerConfigService _configService;
@@ -76,7 +76,7 @@ namespace SIT.Manager.Avalonia.ViewModels
             }
 
             //[32m, [2J, [0;0f,
-            text = ConsoleTextOutputFilterRegex().Replace(text, "");
+            text = ConsoleTextRemoveANSIFilterRegex().Replace(text, "");
 
             ConsoleOutput.Add(text);
         }
