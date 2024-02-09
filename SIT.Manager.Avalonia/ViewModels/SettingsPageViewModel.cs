@@ -54,10 +54,6 @@ public partial class SettingsPageViewModel : ViewModelBase
     [ObservableProperty]
     private List<FontFamily> _installedFonts;
 
-    public IAsyncRelayCommand ChangeInstallLocationCommand { get; }
-
-    public IAsyncRelayCommand ChangeAkiServerLocationCommand { get; }
-
     public SettingsPageViewModel(IManagerConfigService configService, IFolderPickerService folderPickerService, IVersionService versionService) {
         _configsService = configService;
         _folderPickerService = folderPickerService;
@@ -77,12 +73,10 @@ public partial class SettingsPageViewModel : ViewModelBase
 
         ManagerVersionString = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N/A";
 
-        ChangeInstallLocationCommand = new AsyncRelayCommand(ChangeInstallLocation);
-        ChangeAkiServerLocationCommand = new AsyncRelayCommand(ChangeAkiServerLocation);
-
         _isLoaded = true;
     }
 
+    [RelayCommand]
     private async Task ChangeInstallLocation() {
         IStorageFolder? folderSelected = await _folderPickerService.OpenFolderAsync();
         if (folderSelected != null && File.Exists(Path.Combine(folderSelected.Path.AbsolutePath, "EscapeFromTarkov.exe"))) {
@@ -97,6 +91,7 @@ public partial class SettingsPageViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand]
     private async Task ChangeAkiServerLocation() {
         IStorageFolder? folderSelected = await _folderPickerService.OpenFolderAsync();
         if (folderSelected != null && File.Exists(Path.Combine(folderSelected.Path.AbsolutePath, "Aki.Server.exe"))) {
