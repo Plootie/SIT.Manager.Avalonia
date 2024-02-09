@@ -20,7 +20,7 @@ namespace SIT.Manager.Avalonia.ViewModels
     /// </summary>
     public partial class ServerPageViewModel : ViewModelBase
     {
-        private const int CONSOLE_LINE_LIMIT = 50;
+        private const int CONSOLE_LINE_LIMIT = 5000;
 
         [GeneratedRegex("\\x1B(?:[@-Z\\\\-_]|\\[[0-?]*[ -/]*[@-~])")]
         private static partial Regex ConsoleTextRemoveANSIFilterRegex();
