@@ -27,7 +27,9 @@
 								   SizeChanged="ConsoleLogItemsRepeater_SizeChanged" >
 						<ItemsRepeater.ItemTemplate>
 							<DataTemplate>
-								<TextBlock Text="{Binding}"
+								<TextBlock Text="{Binding Messagge}"
+										   Foreground="{Binding TextColor}"
+										   FontFamily="{Binding TextFont}"
 										   TextWrapping="WrapWithOverflow"/>
 							</DataTemplate>
 						</ItemsRepeater.ItemTemplate>

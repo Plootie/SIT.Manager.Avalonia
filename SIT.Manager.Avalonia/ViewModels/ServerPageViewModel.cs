@@ -3,13 +3,13 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
-using ReactiveUI;
+using SIT.Manager.Avalonia.Models;
 using SIT.Manager.Avalonia.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Reactive.Disposables;
+using System.Linq;
 using System.Text.RegularExpressions;
 using static SIT.Manager.Avalonia.Services.AkiServerService;
 
@@ -34,36 +34,14 @@ namespace SIT.Manager.Avalonia.ViewModels
         [ObservableProperty]
         private string _startServerButtonTextBlock = "Start Server";
 
-        // TODO load the console font family and color into the item repeater from settings somehow
-        [ObservableProperty]
-        private string _consoleFontFamily;
-
-        [ObservableProperty]
-        private Color _consoleFontColor;
-
-        public ObservableCollection<string> ConsoleOutput { get; } = [];
+        public ObservableCollection<ConsoleText> ConsoleOutput { get; } = [];
 
         public ServerPageViewModel(IManagerConfigService configService, IAkiServerService akiServerService) {
-            this._configService = configService;
-            this._akiServerService = akiServerService;
+            _configService = configService;
+            _akiServerService = akiServerService;
 
-            ConsoleFontFamily = _configService.Config.ConsoleFontFamily;
-            ConsoleFontColor = _configService.Config.ConsoleFontColor;
-
-            this.WhenActivated((CompositeDisposable disposables) => {
-                // Handle Activation
-
-                _akiServerService.OutputDataReceived += AkiServer_OutputDataReceived;
-                _akiServerService.RunningStateChanged += AkiServer_RunningStateChanged;
-
-                Disposable.Create(() => {
-                    // Handle Deactivation
-
-                    _akiServerService.OutputDataReceived -= AkiServer_OutputDataReceived;
-                    _akiServerService.RunningStateChanged -= AkiServer_RunningStateChanged;
-
-                }).DisposeWith(disposables);
-            });
+            _akiServerService.OutputDataReceived += AkiServer_OutputDataReceived;
+            _akiServerService.RunningStateChanged += AkiServer_RunningStateChanged;
         }
 
         private void AddConsole(string text) {
@@ -78,7 +56,12 @@ namespace SIT.Manager.Avalonia.ViewModels
             //[32m, [2J, [0;0f,
             text = ConsoleTextRemoveANSIFilterRegex().Replace(text, "");
 
-            ConsoleOutput.Add(text);
+            ConsoleText consoleTextEntry = new() {
+                TextColor = new SolidColorBrush(_configService.Config.ConsoleFontColor),
+                TextFont = FontManager.Current.SystemFonts.FirstOrDefault(x => x.Name == _configService.Config.ConsoleFontFamily, FontFamily.Default),
+                Messagge = text
+            };
+            ConsoleOutput.Add(consoleTextEntry);
         }
 
         private void AkiServer_OutputDataReceived(object? sender, DataReceivedEventArgs e) {
