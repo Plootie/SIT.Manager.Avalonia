@@ -47,7 +47,7 @@ namespace SIT.Manager.Avalonia.Services
         }
 
         public bool IsUnhandledInstanceRunning() {
-            Process[] akiServerProcesses = Process.GetProcessesByName(SERVER_EXE.Replace(".exe", ""));
+            Process[] akiServerProcesses = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SERVER_EXE));
 
             if (akiServerProcesses.Length > 0) {
                 if (_serverProcess == null || _serverProcess.HasExited) {
@@ -69,15 +69,18 @@ namespace SIT.Manager.Avalonia.Services
                 return;
             }
 
-            _serverProcess = new Process();
+            _serverProcess = new Process() {
+                StartInfo = new ProcessStartInfo() {
+                    FileName = ServerFilePath,
+                    WorkingDirectory = ServerDirectory,
+                    UseShellExecute = false,
+                    StandardOutputEncoding = Encoding.UTF8,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true
+                },
+                EnableRaisingEvents = true
+            };
 
-            _serverProcess.StartInfo.FileName = ServerFilePath;
-            _serverProcess.StartInfo.WorkingDirectory = ServerDirectory;
-            _serverProcess.StartInfo.UseShellExecute = false;
-            _serverProcess.StartInfo.StandardOutputEncoding = Encoding.UTF8;
-            _serverProcess.StartInfo.RedirectStandardOutput = true;
-            _serverProcess.StartInfo.CreateNoWindow = true;
-            _serverProcess.EnableRaisingEvents = true;
             _serverProcess.OutputDataReceived += new DataReceivedEventHandler((sender, e) => OutputDataReceived?.Invoke(sender, e));
             _serverProcess.Exited += new EventHandler((sender, e) => ExitedEvent(sender, e));
 
@@ -96,8 +99,14 @@ namespace SIT.Manager.Avalonia.Services
 
             _stopRequest = true;
 
-            // Kill the server process
-            _serverProcess.Kill();
+            // Stop the server process
+            bool clsMsgSent = _serverProcess.CloseMainWindow();
+            if (clsMsgSent)
+                _serverProcess.WaitForExit();
+            else {
+                _serverProcess.Kill();
+            }
+            _serverProcess.Close();
         }
     }
 }
