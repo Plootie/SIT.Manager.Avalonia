@@ -102,10 +102,9 @@ namespace SIT.Manager.Avalonia.Services
             // Stop the server process
             bool clsMsgSent = _serverProcess.CloseMainWindow();
             if (clsMsgSent)
-                _serverProcess.WaitForExit();
-            else {
                 _serverProcess.Kill();
-            }
+
+            _serverProcess.WaitForExit();
             _serverProcess.Close();
         }
     }
