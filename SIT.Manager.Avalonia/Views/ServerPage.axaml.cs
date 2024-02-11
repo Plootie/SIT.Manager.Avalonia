@@ -14,7 +14,7 @@ namespace SIT.Manager.Avalonia.Views
             _consoleLogScroller = this.FindControl<ScrollViewer>("ConsoleLogScroller");
         }
 
-        public void ConsoleLogItemsRepeater_SizeChanged(object? sender, SizeChangedEventArgs e) {
+        public void ConsoleLogItemsControl_SizeChanged(object? sender, SizeChangedEventArgs e) {
             _consoleLogScroller?.ScrollToEnd();
         }
     }
