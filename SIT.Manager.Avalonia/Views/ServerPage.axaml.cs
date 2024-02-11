@@ -1,41 +1,21 @@
 using Avalonia.Controls;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using SIT.Manager.Avalonia.ViewModels;
 
 namespace SIT.Manager.Avalonia.Views
 {
     public partial class ServerPage : UserControl
     {
-        private readonly ConsoleContent dc = new();
-        public ServerPage()
-        {
+        private readonly ScrollViewer? _consoleLogScroller;
+
+        public ServerPage() {
+            this.DataContext = App.Current.Services.GetService<ServerPageViewModel>();
             InitializeComponent();
-            DataContext = dc;
-        }
-    }
-
-    public class ConsoleContent : INotifyPropertyChanged
-    {
-        ObservableCollection<string> consoleOutput = [];
-        public ObservableCollection<string> ConsoleOutput
-        {
-            get
-            {
-                return consoleOutput;
-            }
-            set
-            {
-                consoleOutput = value;
-                OnPropertyChanged(nameof(ConsoleOutput));
-            }
+            _consoleLogScroller = this.FindControl<ScrollViewer>("ConsoleLogScroller");
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-        void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        public void ConsoleLogItemsRepeater_SizeChanged(object? sender, SizeChangedEventArgs e) {
+            _consoleLogScroller?.ScrollToEnd();
         }
     }
 }

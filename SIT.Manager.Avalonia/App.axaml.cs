@@ -32,6 +32,7 @@ public sealed partial class App : Application
         var services = new ServiceCollection();
 
         // Services
+        services.AddSingleton<IAkiServerService, AkiServerService>();
         services.AddSingleton<IFolderPickerService>(x => {
             if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow?.StorageProvider is not { } provider) {
                 return new FolderPickerService(new MainWindow());
@@ -43,6 +44,7 @@ public sealed partial class App : Application
 
         // Viewmodels
         services.AddTransient<SettingsPageViewModel>();
+        services.AddTransient<ServerPageViewModel>();
 
         return services.BuildServiceProvider();
     }
