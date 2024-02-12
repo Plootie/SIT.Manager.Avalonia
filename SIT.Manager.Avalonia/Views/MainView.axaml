@@ -8,19 +8,13 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SIT.Manager.Avalonia.Views.MainView"
              x:DataType="vm:MainViewModel"
-			 Background="Black">
-  <Design.DataContext>
-    <!-- This only sets the DataContext for the previewer in an IDE,
-         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-    <vm:MainViewModel />
-  </Design.DataContext>
-	
+			 Background="Black">	
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
-		
+
 		<ui:TeachingTip Name="InstallPathTip"
 						Title="Setup"
 						Subtitle="Client install path isn't configured yet. Go to settings to configure the launcher."
@@ -37,6 +31,18 @@
 					<Button Name="UpdateButton" Content="Update" Click="UpdateButton_Click" HorizontalAlignment="Right"/>
 				</ui:InfoBar.ActionButton>
 			</ui:InfoBar>
+
+			<ItemsControl ItemsSource="{Binding BarNotifications, Mode=OneWay}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<ui:InfoBar HorizontalAlignment="Stretch"
+									Title="{Binding Title}"
+									Message="{Binding Message}"
+									Severity="{Binding Severity}"
+									IsOpen="True"/>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
 		</StackPanel>
 
 		<ui:NavigationView PaneDisplayMode="Left"
