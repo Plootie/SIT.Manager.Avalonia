@@ -100,7 +100,7 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         [RelayCommand]
         private void StartServer() {
-            if (_akiServerService.State == RunningState.NotRunning) {
+            if (_akiServerService.State != RunningState.Running) {
                 if (_akiServerService.IsUnhandledInstanceRunning()) {
                     AddConsole("SPT-AKI is currently running. Please close any running instance of SPT-AKI.");
                     return;
