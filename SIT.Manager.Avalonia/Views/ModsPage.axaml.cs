@@ -1,25 +1,17 @@
-using Avalonia.Controls;
-using Avalonia.Interactivity;
-using System.Diagnostics;
+using Avalonia.ReactiveUI;
+using Microsoft.Extensions.DependencyInjection;
+using ReactiveUI;
+using SIT.Manager.Avalonia.ViewModels;
 
 namespace SIT.Manager.Avalonia.Views
 {
-    public partial class ModsPage : UserControl
+    public partial class ModsPage : ReactiveUserControl<ModsPageViewModel>
     {
-        public ModsPage()
-        {
+        public ModsPage() {
+            this.DataContext = App.Current.Services.GetService<ModsPageViewModel>();
+            // AppPermissionsViewModel's WhenActivated block will also get called.
+            this.WhenActivated(disposables => { /* Handle view activation etc. */ });
             InitializeComponent();
-        }
-
-        private void IUnderstandButton_Click(object? sender, RoutedEventArgs e)
-        {
-            DisclaimerGrid.IsVisible = false;
-            ModGrid.IsVisible = true;
-        }
-
-        private void ModsList_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            
         }
     }
 }

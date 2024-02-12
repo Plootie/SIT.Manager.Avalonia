@@ -54,6 +54,9 @@ public partial class SettingsPageViewModel : ViewModelBase
     [ObservableProperty]
     private List<FontFamily> _installedFonts;
 
+    IAsyncRelayCommand ChangeInstallLocationCommand { get; }
+    IAsyncRelayCommand ChangeAkiServerLocationCommand { get; }
+
     public SettingsPageViewModel(IManagerConfigService configService, IFolderPickerService folderPickerService, IVersionService versionService) {
         _configsService = configService;
         _folderPickerService = folderPickerService;
@@ -68,6 +71,9 @@ public partial class SettingsPageViewModel : ViewModelBase
         ConsoleFontFamily = _configsService.Config.ConsoleFontFamily;
         ConsoleFontColor = _configsService.Config.ConsoleFontColor;
 
+        ChangeInstallLocationCommand = new AsyncRelayCommand(ChangeInstallLocation);
+        ChangeAkiServerLocationCommand = new AsyncRelayCommand(ChangeAkiServerLocation);
+
         InstalledFonts = [.. FontManager.Current.SystemFonts];
         SelectedConsoleFontFamily = InstalledFonts.First(x => x.Name == ConsoleFontFamily);
 
@@ -76,7 +82,6 @@ public partial class SettingsPageViewModel : ViewModelBase
         _isLoaded = true;
     }
 
-    [RelayCommand]
     private async Task ChangeInstallLocation() {
         IStorageFolder? folderSelected = await _folderPickerService.OpenFolderAsync();
         if (folderSelected != null && File.Exists(Path.Combine(folderSelected.Path.AbsolutePath, "EscapeFromTarkov.exe"))) {
@@ -91,7 +96,6 @@ public partial class SettingsPageViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
     private async Task ChangeAkiServerLocation() {
         IStorageFolder? folderSelected = await _folderPickerService.OpenFolderAsync();
         if (folderSelected != null && File.Exists(Path.Combine(folderSelected.Path.AbsolutePath, "Aki.Server.exe"))) {

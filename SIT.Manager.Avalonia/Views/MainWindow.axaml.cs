@@ -9,7 +9,7 @@ public partial class MainWindow : Window
 {
     public MainWindow() {
         InitializeComponent();
-        //This feature doesn't work on linux
+        // This feature doesn't work on linux
         if (OperatingSystem.IsLinux()) {
             CustomTitleBarGrid.IsVisible = false;
         }
@@ -17,8 +17,8 @@ public partial class MainWindow : Window
 
     private void Window_Closed(object? sender, EventArgs e) {
         IAkiServerService? akiServerService = App.Current.Services.GetService<IAkiServerService>();
-        if (akiServerService != null && akiServerService.State == AkiServerService.RunningState.Running) {
-            akiServerService.Stop();
+        if (akiServerService?.IsHandledInstanceRunning() == true) {
+            akiServerService?.Stop();
         }
     }
 }

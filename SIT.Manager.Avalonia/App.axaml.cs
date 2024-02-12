@@ -32,17 +32,21 @@ public sealed partial class App : Application
         var services = new ServiceCollection();
 
         // Services
+        services.AddSingleton<IActionNotificationService, ActionNotificationService>();
         services.AddSingleton<IAkiServerService, AkiServerService>();
-        services.AddSingleton<IFolderPickerService>(x => {
+        services.AddTransient<IFileService, FileService>();
+        services.AddTransient<IFolderPickerService>(x => {
             if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow?.StorageProvider is not { } provider) {
                 return new FolderPickerService(new MainWindow());
             }
             return new FolderPickerService(desktop.MainWindow);
         });
         services.AddSingleton<IManagerConfigService, ManagerConfigService>();
+        services.AddTransient<IModService, ModService>();
         services.AddSingleton<IVersionService, VersionService>();
 
         // Viewmodels
+        services.AddTransient<ModsPageViewModel>();
         services.AddTransient<SettingsPageViewModel>();
         services.AddTransient<ServerPageViewModel>();
 
