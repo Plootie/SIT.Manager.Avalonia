@@ -17,6 +17,7 @@ public partial class SettingsPageViewModel : ViewModelBase
 {
     private readonly IManagerConfigService _configsService;
     private readonly IFolderPickerService _folderPickerService;
+    private readonly IBarNotificationService _barNotificationService;
     private readonly IVersionService _versionService;
 
     private readonly bool _isLoaded = false;
@@ -54,9 +55,13 @@ public partial class SettingsPageViewModel : ViewModelBase
     [ObservableProperty]
     private List<FontFamily> _installedFonts;
 
-    public SettingsPageViewModel(IManagerConfigService configService, IFolderPickerService folderPickerService, IVersionService versionService) {
+    public SettingsPageViewModel(IManagerConfigService configService,
+                                 IFolderPickerService folderPickerService,
+                                 IBarNotificationService notificationService,
+                                 IVersionService versionService) {
         _configsService = configService;
         _folderPickerService = folderPickerService;
+        _barNotificationService = notificationService;
         _versionService = versionService;
 
         CloseAfterLaunch = _configsService.Config.CloseAfterLaunch;
@@ -86,11 +91,10 @@ public partial class SettingsPageViewModel : ViewModelBase
             InstallPath = folderSelected.Path.AbsolutePath;
             TarkovVersion = _versionService.GetEFTVersion(folderSelected.Path.AbsolutePath);
             SitVersion = _versionService.GetSITVersion(folderSelected.Path.AbsolutePath);
-
-            // TODO Utils.ShowInfoBar("Config", $"EFT installation path set to '{eftFolder.Path}'");
+            _barNotificationService.ShowInformational("Config", $"EFT installation path set to '{folderSelected.Path.AbsolutePath}'");
         }
         else {
-            // TODO Utils.ShowInfoBar("Error", "The selected folder was invalid. Make sure it's a proper EFT game folder.", InfoBarSeverity.Error);
+            _barNotificationService.ShowError("Error", $"The selected folder was invalid. Make sure it's a proper EFT game folder.");
         }
     }
 
@@ -99,11 +103,10 @@ public partial class SettingsPageViewModel : ViewModelBase
         IStorageFolder? folderSelected = await _folderPickerService.OpenFolderAsync();
         if (folderSelected != null && File.Exists(Path.Combine(folderSelected.Path.AbsolutePath, "Aki.Server.exe"))) {
             AkiServerPath = folderSelected.Path.AbsolutePath;
-
-            // TODO Utils.ShowInfoBar("Config", $"SPT-AKI installation path set to '{folderSelected.Path.AbsolutePath}'");
+            _barNotificationService.ShowInformational("Config", $"SPT-AKI installation path set to '{folderSelected.Path.AbsolutePath}'");
         }
         else {
-            // TODO Utils.ShowInfoBar("Error", "The selected folder was invalid. Make sure it's a proper SPT-AKI server folder.");
+            _barNotificationService.ShowError("Error", "The selected folder was invalid. Make sure it's a proper SPT-AKI server folder.");
         }
     }
 
