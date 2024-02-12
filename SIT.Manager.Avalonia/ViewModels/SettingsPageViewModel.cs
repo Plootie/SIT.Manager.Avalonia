@@ -68,8 +68,11 @@ public partial class SettingsPageViewModel : ViewModelBase
         ConsoleFontFamily = _configsService.Config.ConsoleFontFamily;
         ConsoleFontColor = _configsService.Config.ConsoleFontColor;
 
-        InstalledFonts = [.. FontManager.Current.SystemFonts];
-        SelectedConsoleFontFamily = InstalledFonts.First(x => x.Name == ConsoleFontFamily);
+        List<FontFamily> installedFonts = [.. FontManager.Current.SystemFonts];
+        installedFonts.Add(FontFamily.Parse("Bender"));
+        InstalledFonts = [.. installedFonts.OrderBy(x => x.Name)];
+
+        SelectedConsoleFontFamily = InstalledFonts.FirstOrDefault(x => x.Name == ConsoleFontFamily, FontFamily.Parse("Bender"));
 
         ManagerVersionString = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N/A";
 
