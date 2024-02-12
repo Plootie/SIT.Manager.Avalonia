@@ -45,6 +45,7 @@ public sealed partial class App : Application
         // Viewmodels
         services.AddTransient<SettingsPageViewModel>();
         services.AddTransient<ServerPageViewModel>();
+        services.AddTransient<PlayPageViewModel>();
 
         return services.BuildServiceProvider();
     }
