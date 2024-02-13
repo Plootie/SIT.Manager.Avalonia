@@ -1,5 +1,6 @@
 ﻿using CG.Web.MegaApiClient;
 using SIT.Manager.Avalonia.Extentions;
+using SIT.Manager.Avalonia.Models;
 using System;
 using System.IO;
 using System.IO.Compression;
@@ -18,7 +19,7 @@ namespace SIT.Manager.Avalonia.Services
             _configService = configService;
         }
 
-        private async Task<bool> DownloadMegaFile(string fileName, string fileUrl) {
+        private async Task<bool> DownloadMegaFile(string fileName, string fileUrl, bool showProgress) {
             // TODO Loggy.LogToFile("Attempting to use Mega API.");
             try {
                 MegaApiClient megaApiClient = new();
@@ -31,8 +32,8 @@ namespace SIT.Manager.Avalonia.Services
 
                 // TODO Loggy.LogToFile($"Starting download of '{fileName}' from '{fileUrl}'");
 
-                Progress<double> progress = new Progress<double>((prog) => {
-                    // TODO mainQueue.TryEnqueue(() => { window.actionProgressBar.Value = (int) Math.Floor(prog); });
+                Progress<double> progress = new((prog) => {
+                    _actionNotificationService.UpdateActionNotification(new ActionNotification($"Downloading '{fileName}'", Math.Floor(prog), showProgress));
                 });
 
                 Uri fileLink = new(fileUrl);
@@ -57,22 +58,11 @@ namespace SIT.Manager.Avalonia.Services
         /// <param name="showProgress">If a progress bar should show the status.</param>
         /// <returns></returns>
         public async Task<bool> DownloadFile(string fileName, string filePath, string fileUrl, bool showProgress = false) {
-            // TODO var window = App.m_window as MainWindow;
-            // TODO DispatcherQueue mainQueue = window.DispatcherQueue;
-
-            /* TODO
-            if (showProgress == true)
-                mainQueue.TryEnqueue(() =>
-                {
-                    window.actionPanel.Visibility = Visibility.Visible;
-                    window.actionProgressRing.Visibility = Visibility.Visible;
-                    window.actionTextBlock.Text = $"Downloading '{fileName}'";
-                });
-            */
+            _actionNotificationService.StartActionNotification();
 
             bool result = false;
             if (fileUrl.Contains("mega.nz")) {
-                result = await DownloadMegaFile(fileName, fileUrl);
+                result = await DownloadMegaFile(fileName, fileUrl, showProgress);
             }
             else {
                 // TODO  Loggy.LogToFile($"Starting download of '{fileName}' from '{fileUrl}'");
@@ -82,7 +72,7 @@ namespace SIT.Manager.Avalonia.Services
                 }
 
                 var progress = new Progress<float>((prog) => {
-                    // TODO mainQueue.TryEnqueue(() => { window.actionProgressBar.Value = (int) Math.Floor(prog); });
+                    _actionNotificationService.UpdateActionNotification(new ActionNotification($"Downloading '{fileName}'", Math.Floor(prog), showProgress));
                 });
 
                 try {
@@ -104,22 +94,12 @@ namespace SIT.Manager.Avalonia.Services
                 }
             }
 
-            /* TODO
-if (showProgress == true)
-        mainQueue.TryEnqueue(() =>
-        {
-            window.actionPanel.Visibility = Visibility.Collapsed;
-            window.actionProgressRing.Visibility = Visibility.Collapsed;
-            window.actionTextBlock.Text = "";
-        });
-*/
-
+            _actionNotificationService.StopActionNotification();
             return result;
         }
 
-        public void ExtractArchive(string filePath, string destination) {
-            // TODO var window = App.m_window as MainWindow;
-            // TODO DispatcherQueue mainQueue = window.DispatcherQueue;
+        public async Task ExtractArchive(string filePath, string destination) {
+            _actionNotificationService.StartActionNotification();
 
             // Ensures that the last character on the extraction path is the directory separator char.
             // Without this, a malicious zip file could try to traverse outside of the expected extraction path.
@@ -128,22 +108,16 @@ if (showProgress == true)
             }
             destination = Path.GetFullPath(destination);
 
+            ActionNotification actionNotification = new(string.Empty, 0, true);
             try {
-                using (ZipArchive archive = ZipFile.OpenRead(filePath)) {
+                using (ZipArchive archive = await Task.Run(() => ZipFile.OpenRead(filePath))) {
                     int totalFiles = archive.Entries.Count;
                     int completed = 0;
 
-                    /* TODO
-                    // Show Action Panel
-                mainQueue.TryEnqueue(() =>
-                {
-                    window.actionPanel.Visibility = Visibility.Visible;
-                    window.actionProgressRing.Visibility = Visibility.Visible;
-                });
-
-                                    var progress = new Progress<float>((prog) => { mainQueue.TryEnqueue(() => { window.actionProgressBar.Value = (int)Math.Floor(prog); }); });
-                IProgress<float> progressBar = progress;
-                    */
+                    Progress<float> progress = new((prog) => {
+                        actionNotification.ProgressPercentage = Math.Floor(prog);
+                        _actionNotificationService.UpdateActionNotification(actionNotification);
+                    });
 
                     foreach (ZipArchiveEntry entry in archive.Entries) {
                         // Gets the full path to ensure that relative segments are removed.
@@ -156,13 +130,14 @@ if (showProgress == true)
                                 Directory.CreateDirectory(destinationPath);
                             }
                             else {
-                                entry.ExtractToFile(destinationPath, true);
+                                // Extract it to the file
+                                await Task.Run(() => entry.ExtractToFile(entry.Name));
                             }
                         }
                         completed++;
 
-                        // TODO progressBar.Report(((float) completed / totalFiles.Count()) * 100);
-                        // TODO mainQueue.TryEnqueue(() => { window.actionTextBlock.Text = $"Extracting file {file.Key.Split("/").Last()} ({completed}/{totalFiles.Count()})"; });
+                        actionNotification.ActionText = $"Extracting file {Path.GetFileName(destinationPath)} ({completed}/{totalFiles})";
+                        ((IProgress<float>) progress).Report((float) completed / totalFiles * 100);
                     }
                 }
             }
@@ -170,13 +145,7 @@ if (showProgress == true)
                 // TODO Loggy.LogToFile("ExtractFile: Error when opening Archive: " + ex.Message + "\n" + ex);
             }
 
-            /* TODO
-            mainQueue.TryEnqueue(() =>
-                {
-                    window.actionPanel.Visibility = Visibility.Collapsed;
-                    window.actionProgressRing.Visibility = Visibility.Collapsed;
-                });
-            */
+            _actionNotificationService.StopActionNotification();
         }
     }
 }

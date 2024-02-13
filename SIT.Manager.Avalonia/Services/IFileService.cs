@@ -14,11 +14,11 @@ namespace SIT.Manager.Avalonia.Services
         /// <returns></returns>
         Task<bool> DownloadFile(string fileName, string filePath, string fileUrl, bool showProgress = false);
         /// <summary>
-        /// Extracts a Zip archive using SharpCompress
+        /// Extracts a Zip archive
         /// </summary>
         /// <param name="filePath">The file to extract</param>
         /// <param name="destination">The destination to extract to</param>
         /// <returns></returns>
-        void ExtractArchive(string filePath, string destination);
+        Task ExtractArchive(string filePath, string destination);
     }
 }

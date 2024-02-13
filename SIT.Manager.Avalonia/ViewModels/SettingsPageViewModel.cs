@@ -55,8 +55,8 @@ public partial class SettingsPageViewModel : ViewModelBase
     [ObservableProperty]
     private List<FontFamily> _installedFonts;
 
-    IAsyncRelayCommand ChangeInstallLocationCommand { get; }
-    IAsyncRelayCommand ChangeAkiServerLocationCommand { get; }
+    public IAsyncRelayCommand ChangeInstallLocationCommand { get; }
+    public IAsyncRelayCommand ChangeAkiServerLocationCommand { get; }
 
     public SettingsPageViewModel(IManagerConfigService configService,
                                  IBarNotificationService barNotificationService,

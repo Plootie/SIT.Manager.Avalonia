@@ -16,6 +16,7 @@ namespace SIT.Manager.Avalonia.ViewModels
 {
     public partial class ModsPageViewModel : ViewModelBase
     {
+        private readonly IBarNotificationService _barNotificationService;
         private readonly IManagerConfigService _managerConfigService;
         private readonly IModService _modService;
 
@@ -39,7 +40,8 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         public IAsyncRelayCommand UninstallModCommand { get; }
 
-        public ModsPageViewModel(IManagerConfigService managerConfigService, IModService modService) {
+        public ModsPageViewModel(IManagerConfigService managerConfigService, IBarNotificationService barNotificationService, IModService modService) {
+            _barNotificationService = barNotificationService;
             _managerConfigService = managerConfigService;
             _modService = modService;
 
@@ -63,7 +65,7 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         private async Task LoadMasterList() {
             if (string.IsNullOrEmpty(_managerConfigService.Config.InstallPath)) {
-                // TODO Utils.ShowInfoBar("Error", "Install Path is not set. Configure it in Settings.", InfoBarSeverity.Error);
+                _barNotificationService.ShowError("Error", "Install Path is not set. Configure it in Settings.");
                 return;
             }
 
@@ -121,7 +123,7 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         private async Task DownloadModPackage() {
             if (string.IsNullOrEmpty(_managerConfigService.Config.InstallPath)) {
-                // TODO Utils.ShowInfoBar("Error", "Install Path is not set. Configure it in Settings.", InfoBarSeverity.Error);
+                _barNotificationService.ShowError("Error", "Install Path is not set. Configure it in Settings.");
                 return;
             }
             // Loggy.LogToFile("DownloadModPack: Starting download of mod package.");

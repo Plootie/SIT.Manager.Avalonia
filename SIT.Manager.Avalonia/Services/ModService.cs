@@ -30,7 +30,7 @@ namespace SIT.Manager.Avalonia.Services
             Directory.CreateDirectory(Path.Combine(modsDirectory, "Extracted"));
 
             await _filesService.DownloadFile("SIT.Mod.Ports.Collection.zip", modsDirectory, MOD_COLLECTION_URL, true);
-            _filesService.ExtractArchive(Path.Combine(modsDirectory, "SIT.Mod.Ports.Collection.zip"), Path.Combine(modsDirectory, "Extracted"));
+            await _filesService.ExtractArchive(Path.Combine(modsDirectory, "SIT.Mod.Ports.Collection.zip"), Path.Combine(modsDirectory, "Extracted"));
         }
 
         public async Task AutoUpdate(List<ModInfo> outdatedMods) {
