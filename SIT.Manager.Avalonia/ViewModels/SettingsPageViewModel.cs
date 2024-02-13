@@ -20,8 +20,6 @@ public partial class SettingsPageViewModel : ViewModelBase
     private readonly IBarNotificationService _barNotificationService;
     private readonly IVersionService _versionService;
 
-    private readonly bool _isLoaded = false;
-
     [ObservableProperty]
     private bool _closeAfterLaunch;
 
@@ -55,6 +53,10 @@ public partial class SettingsPageViewModel : ViewModelBase
     [ObservableProperty]
     private List<FontFamily> _installedFonts;
 
+    public IAsyncRelayCommand ChangeInstallLocationCommand { get; }
+
+    public IAsyncRelayCommand ChangeAkiServerLocationCommand { get; }
+
     public SettingsPageViewModel(IManagerConfigService configService,
                                  IFolderPickerService folderPickerService,
                                  IBarNotificationService notificationService,
@@ -64,27 +66,27 @@ public partial class SettingsPageViewModel : ViewModelBase
         _barNotificationService = notificationService;
         _versionService = versionService;
 
-        CloseAfterLaunch = _configsService.Config.CloseAfterLaunch;
-        LookForUpdates = _configsService.Config.LookForUpdates;
-        InstallPath = _configsService.Config.InstallPath;
-        TarkovVersion = _configsService.Config.TarkovVersion;
-        SitVersion = _configsService.Config.SitVersion;
-        AkiServerPath = _configsService.Config.AkiServerPath;
-        ConsoleFontFamily = _configsService.Config.ConsoleFontFamily;
-        ConsoleFontColor = _configsService.Config.ConsoleFontColor;
+        _closeAfterLaunch = _configsService.Config.CloseAfterLaunch;
+        _lookForUpdates = _configsService.Config.LookForUpdates;
+        _installPath = _configsService.Config.InstallPath;
+        _tarkovVersion = _configsService.Config.TarkovVersion;
+        _sitVersion = _configsService.Config.SitVersion;
+        _akiServerPath = _configsService.Config.AkiServerPath;
+        _consoleFontFamily = _configsService.Config.ConsoleFontFamily;
+        _consoleFontColor = _configsService.Config.ConsoleFontColor;
 
         List<FontFamily> installedFonts = [.. FontManager.Current.SystemFonts];
         installedFonts.Add(FontFamily.Parse("Bender"));
-        InstalledFonts = [.. installedFonts.OrderBy(x => x.Name)];
+        _installedFonts = [.. installedFonts.OrderBy(x => x.Name)];
 
-        SelectedConsoleFontFamily = InstalledFonts.FirstOrDefault(x => x.Name == ConsoleFontFamily, FontFamily.Parse("Bender"));
+        _selectedConsoleFontFamily = InstalledFonts.FirstOrDefault(x => x.Name == ConsoleFontFamily, FontFamily.Parse("Bender"));
 
-        ManagerVersionString = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N/A";
+        _managerVersionString = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N/A";
 
-        _isLoaded = true;
+        ChangeInstallLocationCommand = new AsyncRelayCommand(ChangeInstallLocation);
+        ChangeAkiServerLocationCommand = new AsyncRelayCommand(ChangeAkiServerLocation);
     }
 
-    [RelayCommand]
     private async Task ChangeInstallLocation() {
         IStorageFolder? folderSelected = await _folderPickerService.OpenFolderAsync();
         if (folderSelected != null && File.Exists(Path.Combine(folderSelected.Path.AbsolutePath, "EscapeFromTarkov.exe"))) {
@@ -98,7 +100,6 @@ public partial class SettingsPageViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
     private async Task ChangeAkiServerLocation() {
         IStorageFolder? folderSelected = await _folderPickerService.OpenFolderAsync();
         if (folderSelected != null && File.Exists(Path.Combine(folderSelected.Path.AbsolutePath, "Aki.Server.exe"))) {
@@ -117,19 +118,17 @@ public partial class SettingsPageViewModel : ViewModelBase
     protected override void OnPropertyChanged(PropertyChangedEventArgs e) {
         base.OnPropertyChanged(e);
 
-        if (_isLoaded) {
-            ManagerConfig config = _configsService.Config;
-            config.CloseAfterLaunch = CloseAfterLaunch;
-            config.LookForUpdates = LookForUpdates;
-            config.InstallPath = InstallPath;
-            config.TarkovVersion = TarkovVersion;
-            config.SitVersion = SitVersion;
-            config.AkiServerPath = AkiServerPath;
-            config.ConsoleFontFamily = ConsoleFontFamily;
-            config.ConsoleFontColor = ConsoleFontColor;
+        ManagerConfig config = _configsService.Config;
+        config.CloseAfterLaunch = CloseAfterLaunch;
+        config.LookForUpdates = LookForUpdates;
+        config.InstallPath = InstallPath;
+        config.TarkovVersion = TarkovVersion;
+        config.SitVersion = SitVersion;
+        config.AkiServerPath = AkiServerPath;
+        config.ConsoleFontFamily = ConsoleFontFamily;
+        config.ConsoleFontColor = ConsoleFontColor;
 
-            _configsService.UpdateConfig(config);
-            _configsService.Save();
-        }
+        _configsService.UpdateConfig(config);
+        _configsService.Save();
     }
 }
