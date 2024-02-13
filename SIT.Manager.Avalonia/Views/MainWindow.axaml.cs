@@ -18,7 +18,7 @@ public partial class MainWindow : Window
 
     private void Window_Closed(object? sender, EventArgs e) {
         IAkiServerService? akiServerService = App.Current.Services.GetService<IAkiServerService>();
-        if (akiServerService != null && akiServerService.State == AkiServerService.RunningState.Running) {
+        if (akiServerService != null && akiServerService.State == RunningState.Running) {
             akiServerService.Stop();
         }
     }

@@ -106,7 +106,7 @@ namespace SIT.Manager.Avalonia.ViewModels
                     return;
                 }
 
-                if (!File.Exists(_akiServerService.ServerFilePath)) {
+                if (!File.Exists(_akiServerService.ExecutableFilePath)) {
                     AddConsole("SPT-AKI not found. Please configure the SPT-AKI path in Settings tab before starting the server.");
                     return;
                 }
