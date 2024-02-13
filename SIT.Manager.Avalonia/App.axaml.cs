@@ -34,6 +34,7 @@ public sealed partial class App : Application
         // Services
         services.AddSingleton<IActionNotificationService, ActionNotificationService>();
         services.AddSingleton<IAkiServerService, AkiServerService>();
+        services.AddSingleton<IBarNotificationService, BarNotificationService>();
         services.AddTransient<IFileService, FileService>();
         services.AddTransient<IFolderPickerService>(x => {
             if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow?.StorageProvider is not { } provider) {
@@ -46,6 +47,7 @@ public sealed partial class App : Application
         services.AddSingleton<IVersionService, VersionService>();
 
         // Viewmodels
+        services.AddTransient<MainViewModel>();
         services.AddTransient<ModsPageViewModel>();
         services.AddTransient<SettingsPageViewModel>();
         services.AddTransient<ServerPageViewModel>();
@@ -60,12 +62,12 @@ public sealed partial class App : Application
     public override void OnFrameworkInitializationCompleted() {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
             desktop.MainWindow = new MainWindow {
-                DataContext = new MainViewModel()
+                DataContext = Current.Services.GetService<MainViewModel>()
             };
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform) {
             singleViewPlatform.MainView = new MainView {
-                DataContext = new MainViewModel()
+                DataContext = Current.Services.GetService<MainViewModel>()
             };
         }
 
