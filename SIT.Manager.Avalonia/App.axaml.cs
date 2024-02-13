@@ -34,6 +34,7 @@ public sealed partial class App : Application
 
         // Services
         services.AddSingleton<IAkiServerService, AkiServerService>();
+        services.AddSingleton<ITarkovClientService, TarkovClientService>();
         services.AddSingleton<IBarNotificationService, BarNotificationService>();
         services.AddSingleton<IFolderPickerService>(x => {
             if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow?.StorageProvider is not { } provider) {
