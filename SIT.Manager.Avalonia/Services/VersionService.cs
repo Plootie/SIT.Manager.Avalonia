@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
+using SIT.Manager.Avalonia.Interfaces;
 
 namespace SIT.Manager.Avalonia.Services
 {

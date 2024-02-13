@@ -2,18 +2,12 @@
 using System.Diagnostics;
 using static SIT.Manager.Avalonia.Services.AkiServerService;
 
-namespace SIT.Manager.Avalonia.Services
+namespace SIT.Manager.Avalonia.Interfaces
 {
-    public interface IAkiServerService
+    public interface IAkiServerService : IManagedProcess
     {
-        string ServerFilePath { get; }
-        RunningState State { get; }
-
         event EventHandler<DataReceivedEventArgs>? OutputDataReceived;
-        event EventHandler<RunningState>? RunningStateChanged;
-
         bool IsUnhandledInstanceRunning();
         void Start();
-        void Stop();
     }
 }

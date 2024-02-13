@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.Services;
 using System;
 

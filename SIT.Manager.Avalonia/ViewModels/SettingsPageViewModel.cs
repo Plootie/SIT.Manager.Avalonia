@@ -2,8 +2,8 @@
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.Models;
-using SIT.Manager.Avalonia.Services;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;

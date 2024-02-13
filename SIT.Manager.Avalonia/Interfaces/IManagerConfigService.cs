@@ -1,6 +1,6 @@
 ﻿using SIT.Manager.Avalonia.Models;
 
-namespace SIT.Manager.Avalonia.Services
+namespace SIT.Manager.Avalonia.Interfaces
 {
     public interface IManagerConfigService
     {

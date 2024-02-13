@@ -2,19 +2,13 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using SIT.Manager.Avalonia.Interfaces;
 
 namespace SIT.Manager.Avalonia.Services
 {
     public class AkiServerService : IAkiServerService
     {
         private const string SERVER_EXE = "Aki.Server.exe";
-
-        public enum RunningState
-        {
-            NotRunning,
-            Running,
-            StoppedUnexpectedly
-        }
 
         private readonly IManagerConfigService _configService;
 
@@ -23,7 +17,7 @@ namespace SIT.Manager.Avalonia.Services
 
         private string ServerDirectory => !string.IsNullOrEmpty(_configService.Config.AkiServerPath) ? _configService.Config.AkiServerPath : string.Empty;
 
-        public string ServerFilePath => !string.IsNullOrEmpty(ServerDirectory) ? Path.Combine(ServerDirectory, SERVER_EXE) : string.Empty;
+        public string ExecutableFilePath => !string.IsNullOrEmpty(ServerDirectory) ? Path.Combine(ServerDirectory, SERVER_EXE) : string.Empty;
 
         public RunningState State { get; private set; } = RunningState.NotRunning;
 
@@ -71,7 +65,7 @@ namespace SIT.Manager.Avalonia.Services
 
             _serverProcess = new Process() {
                 StartInfo = new ProcessStartInfo() {
-                    FileName = ServerFilePath,
+                    FileName = ExecutableFilePath,
                     WorkingDirectory = ServerDirectory,
                     UseShellExecute = false,
                     StandardOutputEncoding = Encoding.UTF8,

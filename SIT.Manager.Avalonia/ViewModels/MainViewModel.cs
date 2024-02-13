@@ -1,5 +1,5 @@
-﻿using SIT.Manager.Avalonia.Models;
-using SIT.Manager.Avalonia.Services;
+﻿using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;

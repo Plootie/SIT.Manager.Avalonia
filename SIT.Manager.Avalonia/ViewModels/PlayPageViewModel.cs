@@ -1,8 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
+using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.Models;
-using SIT.Manager.Avalonia.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
