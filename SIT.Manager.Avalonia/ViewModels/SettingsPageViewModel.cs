@@ -20,8 +20,6 @@ public partial class SettingsPageViewModel : ViewModelBase
     private readonly IBarNotificationService _barNotificationService;
     private readonly IVersionService _versionService;
 
-    private readonly bool _isLoaded = false;
-
     [ObservableProperty]
     private bool _closeAfterLaunch;
 
@@ -56,6 +54,7 @@ public partial class SettingsPageViewModel : ViewModelBase
     private List<FontFamily> _installedFonts;
 
     public IAsyncRelayCommand ChangeInstallLocationCommand { get; }
+
     public IAsyncRelayCommand ChangeAkiServerLocationCommand { get; }
 
     public SettingsPageViewModel(IManagerConfigService configService,
@@ -67,33 +66,61 @@ public partial class SettingsPageViewModel : ViewModelBase
         _barNotificationService = barNotificationService;
         _versionService = versionService;
 
-        CloseAfterLaunch = _configsService.Config.CloseAfterLaunch;
-        LookForUpdates = _configsService.Config.LookForUpdates;
-        InstallPath = _configsService.Config.InstallPath;
-        TarkovVersion = _configsService.Config.TarkovVersion;
-        SitVersion = _configsService.Config.SitVersion;
-        AkiServerPath = _configsService.Config.AkiServerPath;
-        ConsoleFontFamily = _configsService.Config.ConsoleFontFamily;
-        ConsoleFontColor = _configsService.Config.ConsoleFontColor;
+        _closeAfterLaunch = _configsService.Config.CloseAfterLaunch;
+        _lookForUpdates = _configsService.Config.LookForUpdates;
+        _installPath = _configsService.Config.InstallPath;
+        _tarkovVersion = _configsService.Config.TarkovVersion;
+        _sitVersion = _configsService.Config.SitVersion;
+        _akiServerPath = _configsService.Config.AkiServerPath;
+        _consoleFontFamily = _configsService.Config.ConsoleFontFamily;
+        _consoleFontColor = _configsService.Config.ConsoleFontColor;
+
+        List<FontFamily> installedFonts = [.. FontManager.Current.SystemFonts];
+        installedFonts.Add(FontFamily.Parse("Bender"));
+        _installedFonts = [.. installedFonts.OrderBy(x => x.Name)];
+
+        _selectedConsoleFontFamily = InstalledFonts.FirstOrDefault(x => x.Name == ConsoleFontFamily, FontFamily.Parse("Bender"));
+
+        _managerVersionString = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N/A";
 
         ChangeInstallLocationCommand = new AsyncRelayCommand(ChangeInstallLocation);
         ChangeAkiServerLocationCommand = new AsyncRelayCommand(ChangeAkiServerLocation);
+    }
 
-        InstalledFonts = [.. FontManager.Current.SystemFonts];
-        SelectedConsoleFontFamily = InstalledFonts.First(x => x.Name == ConsoleFontFamily);
+    /// <summary>
+    /// Parse the directory path we get from the folder picker 
+    /// </summary>
+    /// <param name="path">The folder picker path</param>
+    /// <returns>A cleaned ready to use path</returns>
+    private static string ParseFolderPickerPath(string path) {
+        // For some reason the abolute path returns spaces as the %20 escape code
+        string filteredPath = path.Replace("%20", " ");
+        return filteredPath;
+    }
 
-        ManagerVersionString = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N/A";
-
-        _isLoaded = true;
+    /// <summary>
+    /// Gets the path containing the required filename based on the folder picker selection from a user
+    /// </summary>
+    /// <param name="filename">The filename to look for in the user specified directory</param>
+    /// <returns>The path if the file exists, otherwise an empty string</returns>
+    private async Task<string> GetPathLocation(string filename) {
+        IStorageFolder? folderSelected = await _folderPickerService.OpenFolderAsync();
+        if (folderSelected != null) {
+            string directoryPath = ParseFolderPickerPath(folderSelected.Path.AbsolutePath);
+            if (File.Exists(Path.Combine(directoryPath, filename))) {
+                return directoryPath;
+            }
+        }
+        return string.Empty;
     }
 
     private async Task ChangeInstallLocation() {
-        IStorageFolder? folderSelected = await _folderPickerService.OpenFolderAsync();
-        if (folderSelected != null && File.Exists(Path.Combine(folderSelected.Path.AbsolutePath, "EscapeFromTarkov.exe"))) {
-            InstallPath = folderSelected.Path.AbsolutePath;
-            TarkovVersion = _versionService.GetEFTVersion(folderSelected.Path.AbsolutePath);
-            SitVersion = _versionService.GetSITVersion(folderSelected.Path.AbsolutePath);
-            _barNotificationService.ShowInformational("Config", $"EFT installation path set to '{folderSelected.Path.AbsolutePath}'");
+        string targetPath = await GetPathLocation("EscapeFromTarkov.exe");
+        if (!string.IsNullOrEmpty(targetPath)) {
+            InstallPath = targetPath;
+            TarkovVersion = _versionService.GetEFTVersion(targetPath);
+            SitVersion = _versionService.GetSITVersion(targetPath);
+            _barNotificationService.ShowInformational("Config", $"EFT installation path set to '{targetPath}'");
         }
         else {
             _barNotificationService.ShowError("Error", $"The selected folder was invalid. Make sure it's a proper EFT game folder.");
@@ -101,10 +128,10 @@ public partial class SettingsPageViewModel : ViewModelBase
     }
 
     private async Task ChangeAkiServerLocation() {
-        IStorageFolder? folderSelected = await _folderPickerService.OpenFolderAsync();
-        if (folderSelected != null && File.Exists(Path.Combine(folderSelected.Path.AbsolutePath, "Aki.Server.exe"))) {
-            AkiServerPath = folderSelected.Path.AbsolutePath;
-            _barNotificationService.ShowInformational("Config", $"SPT-AKI installation path set to '{folderSelected.Path.AbsolutePath}'");
+        string targetPath = await GetPathLocation("Aki.Server.exe");
+        if (!string.IsNullOrEmpty(targetPath)) {
+            AkiServerPath = targetPath;
+            _barNotificationService.ShowInformational("Config", $"SPT-AKI installation path set to '{targetPath}'");
         }
         else {
             _barNotificationService.ShowError("Error", "The selected folder was invalid. Make sure it's a proper SPT-AKI server folder.");
@@ -118,19 +145,17 @@ public partial class SettingsPageViewModel : ViewModelBase
     protected override void OnPropertyChanged(PropertyChangedEventArgs e) {
         base.OnPropertyChanged(e);
 
-        if (_isLoaded) {
-            ManagerConfig config = _configsService.Config;
-            config.CloseAfterLaunch = CloseAfterLaunch;
-            config.LookForUpdates = LookForUpdates;
-            config.InstallPath = InstallPath;
-            config.TarkovVersion = TarkovVersion;
-            config.SitVersion = SitVersion;
-            config.AkiServerPath = AkiServerPath;
-            config.ConsoleFontFamily = ConsoleFontFamily;
-            config.ConsoleFontColor = ConsoleFontColor;
+        ManagerConfig config = _configsService.Config;
+        config.CloseAfterLaunch = CloseAfterLaunch;
+        config.LookForUpdates = LookForUpdates;
+        config.InstallPath = InstallPath;
+        config.TarkovVersion = TarkovVersion;
+        config.SitVersion = SitVersion;
+        config.AkiServerPath = AkiServerPath;
+        config.ConsoleFontFamily = ConsoleFontFamily;
+        config.ConsoleFontColor = ConsoleFontColor;
 
-            _configsService.UpdateConfig(config);
-            _configsService.Save();
-        }
+        _configsService.UpdateConfig(config);
+        _configsService.Save();
     }
 }

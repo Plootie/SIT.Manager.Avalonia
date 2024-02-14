@@ -58,7 +58,7 @@ namespace SIT.Manager.Avalonia.ViewModels
 
             ConsoleText consoleTextEntry = new() {
                 TextColor = new SolidColorBrush(_configService.Config.ConsoleFontColor),
-                TextFont = FontManager.Current.SystemFonts.FirstOrDefault(x => x.Name == _configService.Config.ConsoleFontFamily, FontFamily.Default),
+                TextFont = FontManager.Current.SystemFonts.FirstOrDefault(x => x.Name == _configService.Config.ConsoleFontFamily, FontFamily.Parse("Bender")),
                 Messagge = text
             };
             ConsoleOutput.Add(consoleTextEntry);
