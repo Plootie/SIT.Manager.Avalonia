@@ -12,7 +12,7 @@ namespace SIT.Manager.Avalonia.Services
         /// </summary>
         /// <param name="outdatedMods"><see cref="List{T}"/> of <see cref="ModInfo"/> that are outdated.</param>
         Task AutoUpdate(List<ModInfo> outdatedMods);
-        Task InstallMod(ModInfo mod, bool suppressNotification = false);
-        Task UninstallMod(ModInfo mod);
+        Task<bool> InstallMod(ModInfo mod, bool suppressNotification = false);
+        Task<bool> UninstallMod(ModInfo mod);
     }
 }

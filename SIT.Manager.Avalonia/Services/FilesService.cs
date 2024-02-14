@@ -131,7 +131,7 @@ namespace SIT.Manager.Avalonia.Services
                             }
                             else {
                                 // Extract it to the file
-                                await Task.Run(() => entry.ExtractToFile(entry.Name));
+                                await Task.Run(() => entry.ExtractToFile(destinationPath));
                             }
                         }
                         completed++;

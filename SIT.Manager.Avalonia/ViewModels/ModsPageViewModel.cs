@@ -151,14 +151,18 @@ namespace SIT.Manager.Avalonia.ViewModels
             if (SelectedMod == null) {
                 return;
             }
-            await _modService.InstallMod(SelectedMod);
+
+            bool installSuccessful = await _modService.InstallMod(SelectedMod);
+            EnableInstall = !installSuccessful;
         }
 
         private async Task UninstallMod() {
             if (SelectedMod == null) {
                 return;
             }
-            await _modService.UninstallMod(SelectedMod);
+
+            bool uninstallSuccessful = await _modService.UninstallMod(SelectedMod);
+            EnableInstall = uninstallSuccessful;
         }
     }
 }
