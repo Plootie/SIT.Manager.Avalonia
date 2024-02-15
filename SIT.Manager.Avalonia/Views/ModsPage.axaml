@@ -127,6 +127,7 @@
 					<Button Name="InstallButton" 
 							Margin="10" 
 							ToolTip.Tip="Install the mod." 
+							MinHeight="32"
 							Command="{Binding InstallModCommand}"
 							IsEnabled="{Binding EnableInstall}">
 						<StackPanel Orientation="Horizontal">
@@ -137,6 +138,7 @@
 					<Button Name="UninstallButton" 
 							Margin="10" 
 							ToolTip.Tip="Uninstall the mod." 
+							MinHeight="32"
 							Command="{Binding UninstallModCommand}"
 							IsEnabled="{Binding !EnableInstall}">
 						<StackPanel Orientation="Horizontal">
