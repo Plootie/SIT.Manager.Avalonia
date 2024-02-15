@@ -1,5 +1,5 @@
 ﻿using Avalonia.Controls.ApplicationLifetimes;
-using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.ManagedProcess;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

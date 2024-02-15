@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SIT.Manager.Avalonia.Interfaces
+namespace SIT.Manager.Avalonia.ManagedProcess
 {
     public interface ITarkovClientService : IManagedProcess
     {

@@ -1,5 +1,5 @@
 ﻿using SIT.Manager.Avalonia.Converters;
-using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
 using System;
 using System.Diagnostics;
