@@ -11,12 +11,7 @@ namespace SIT.Manager.Avalonia.Services
         public BarNotificationService() { }
 
         public void Show(string title, string message, InfoBarSeverity severity = InfoBarSeverity.Informational, int delay = 5) {
-            BarNotification newNotification = new() {
-                Title = title,
-                Message = message,
-                Severity = severity,
-                Delay = delay
-            };
+            BarNotification newNotification = new(title, message, severity, delay);
             BarNotificationReceived?.Invoke(this, newNotification);
         }
 

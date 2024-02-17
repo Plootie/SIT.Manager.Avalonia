@@ -9,7 +9,7 @@ public partial class MainWindow : Window
 {
     public MainWindow() {
         InitializeComponent();
-        //This feature doesn't work on linux
+        // This feature doesn't work on linux
         if (OperatingSystem.IsLinux()) {
             CustomTitleBarGrid.IsVisible = false;
         }

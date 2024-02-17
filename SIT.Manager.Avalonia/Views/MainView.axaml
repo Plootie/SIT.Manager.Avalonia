@@ -67,9 +67,27 @@
 						<ImageBrush Source="/Assets/bg3.png" Stretch="Fill"/>
 					</ui:Frame.Background>
 				</ui:Frame>
-				<StackPanel Name="ActionPanel" Orientation="Horizontal" HorizontalAlignment="Center" IsVisible="False" Grid.Row="1" MinHeight="24">
-					<TextBlock Name="ActionPanelText" Text="Downloading SIT.Client 0.13.9.123" Foreground="White" VerticalAlignment="Center" FontSize="12"/>
-					<ProgressBar Name="ActionPanelBar" Margin="15 0 0 0" VerticalAlignment="Center" Width="150" MinWidth="100" MaxWidth="150" Minimum="0" Maximum="100" Value="0"/>
+				<StackPanel Name="ActionPanel" 
+							Orientation="Horizontal" 
+							HorizontalAlignment="Center" 
+							DataContext="{Binding ActionPanelNotification}"
+							IsVisible="{Binding ShowActionPanel}"
+							Grid.Row="1" 
+							MinHeight="24">
+					<TextBlock Name="ActionPanelText" 
+							   Text="{Binding ActionText}" 
+							   Foreground="White" 
+							   VerticalAlignment="Center" 
+							   FontSize="12"/>
+					<ProgressBar Name="ActionPanelBar" 
+								 Margin="15 0 0 0" 
+								 VerticalAlignment="Center"
+								 Width="150"
+								 MinWidth="100" 
+								 MaxWidth="150" 
+								 Minimum="0" 
+								 Maximum="100" 
+								 Value="{Binding ProgressPercentage}"/>
 				</StackPanel>
 			</Grid>
 		</ui:NavigationView> 

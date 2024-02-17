@@ -58,12 +58,12 @@ public partial class SettingsPageViewModel : ViewModelBase
     public IAsyncRelayCommand ChangeAkiServerLocationCommand { get; }
 
     public SettingsPageViewModel(IManagerConfigService configService,
+                                 IBarNotificationService barNotificationService,
                                  IFolderPickerService folderPickerService,
-                                 IBarNotificationService notificationService,
                                  IVersionService versionService) {
         _configsService = configService;
         _folderPickerService = folderPickerService;
-        _barNotificationService = notificationService;
+        _barNotificationService = barNotificationService;
         _versionService = versionService;
 
         _closeAfterLaunch = _configsService.Config.CloseAfterLaunch;
