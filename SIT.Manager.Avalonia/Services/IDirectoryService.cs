@@ -10,7 +10,7 @@ namespace SIT.Manager.Avalonia.Services
         /// <returns>Path the user selected or and empty string</returns>
         Task<string> GetDirectoryFromPickerAsync();
         /// <summary>
-        /// Open the system file manager at the path requested
+        /// Open the system file manager at the path requested, if the directory doesn't exist then do nothing
         /// </summary>
         /// <param name="path">Path to open file manager at</param>
         Task OpenDirectoryAsync(string path);

@@ -51,7 +51,7 @@ public sealed partial class App : Application
         services.AddTransient<ModsPageViewModel>();
         services.AddTransient<SettingsPageViewModel>();
         services.AddTransient<ServerPageViewModel>();
-        // services.AddTransient<ToolsPageViewModel>();
+        services.AddTransient<ToolsPageViewModel>();
 
         return services.BuildServiceProvider();
     }

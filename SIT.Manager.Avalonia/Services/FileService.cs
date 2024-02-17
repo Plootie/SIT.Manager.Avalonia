@@ -1,6 +1,7 @@
 ﻿using CG.Web.MegaApiClient;
 using SIT.Manager.Avalonia.Extentions;
 using SIT.Manager.Avalonia.Models;
+using SIT.Manager.Avalonia.Utilities;
 using System;
 using System.IO;
 using System.IO.Compression;
@@ -146,6 +147,14 @@ namespace SIT.Manager.Avalonia.Services
             }
 
             _actionNotificationService.StopActionNotification();
+        }
+
+        public async Task OpenFileAsync(string path) {
+            if (!File.Exists(path)) {
+                // File doesn't exist so return early.
+                return;
+            }
+            await FileOpener.OpenAtLocation(path);
         }
     }
 }
