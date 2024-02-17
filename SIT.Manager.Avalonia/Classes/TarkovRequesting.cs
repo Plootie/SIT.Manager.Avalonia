@@ -13,14 +13,12 @@ namespace SIT.Manager.Avalonia.Classes
 {
     public class TarkovRequesting
     {
-        public string Session;
         public Uri RemoteEndPoint;
         private readonly HttpClient _httpClient;
         private readonly HttpClientHandler _httpClientHandler;
         
-        public TarkovRequesting(string session, Uri remoteEndPont, HttpClient httpClient, HttpClientHandler httpClientHandler)
+        public TarkovRequesting(Uri remoteEndPont, HttpClient httpClient, HttpClientHandler httpClientHandler)
         { 
-            Session = session;
             RemoteEndPoint = remoteEndPont;
             _httpClient = httpClient;
             _httpClientHandler = httpClientHandler;
@@ -34,12 +32,7 @@ namespace SIT.Manager.Avalonia.Classes
             UriBuilder serverUriBuilder = new(requestOptions.Scheme, RemoteEndPoint.Host, RemoteEndPoint.Port, url);
             HttpRequestMessage request = new(method, serverUriBuilder.Uri);
             request.Headers.ExpectContinue = true;
-            
-            if(!string.IsNullOrEmpty(Session))
-            {
-                request.Headers.Add("Cookie", $"PHPSESSID={Session}");
-                request.Headers.Add("SessionId", Session);
-            }
+
 
             //Typically deflate, gzip
             foreach(string encoding in requestOptions.AcceptEncoding)
