@@ -26,12 +26,13 @@ namespace SIT.Manager.Avalonia.Classes
             _httpClientHandler = httpClientHandler;
         }
 
-        private async Task<Stream> Send(string url, HttpMethod? method = null, string? data = null, bool useCompression = true, CancellationToken cancellationToken = default)
+        private async Task<Stream> Send(string url, HttpMethod? method = null, string? data = null, TarkovRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
         {
-            //Why make simple things enums when we can make them non static types to make life hard :)
+            //TODO: Clean this, kinda icky
             method ??= HttpMethod.Get;
             //TODO: Look at making these default headers. Not sure if the added overhead of setting up each request is justifiable with keeping a single instance
-            HttpRequestMessage request = new(method, new Uri(RemoteEndPoint, url));
+            UriBuilder serverUriBuilder = new(requestOptions.Scheme, RemoteEndPoint.Host, RemoteEndPoint.Port, url);
+            HttpRequestMessage request = new(method, serverUriBuilder.Uri);
             request.Headers.ExpectContinue = true;
             
             if(!string.IsNullOrEmpty(Session))
@@ -40,26 +41,28 @@ namespace SIT.Manager.Avalonia.Classes
                 request.Headers.Add("SessionId", Session);
             }
 
-            request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("deflate"));
-            request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+            //Typically deflate, gzip
+            foreach(string encoding in requestOptions.AcceptEncoding)
+            {
+                request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue(encoding));
+            }
 
             if(method != HttpMethod.Get && !string.IsNullOrEmpty(data))
             {
-                byte[] bytes = useCompression ? SimpleZlib.CompressToBytes(data, zlibConst.Z_BEST_SPEED) : Encoding.UTF8.GetBytes(data);
-                request.Content = new ByteArrayContent(bytes);
+                byte[] contentBytes = SimpleZlib.CompressToBytes(data, requestOptions.CompressionProfile);
+                request.Content = new ByteArrayContent(contentBytes);
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                if (useCompression)
-                    request.Content.Headers.ContentEncoding.Add("deflate");
+                request.Content.Headers.ContentEncoding.Add("deflate");
+
             }
 
             try
             {
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                cts.CancelAfter((int)Math.Round(TimeSpan.FromMinutes(1).TotalMilliseconds));
+                cts.CancelAfter((int)Math.Round(requestOptions.Timeout.TotalMilliseconds));
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cts.Token);
-#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
-                return await response.Content.ReadAsStreamAsync();
-#pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
+                cts.TryReset(); //This is mostly to shut the compiler up about passing the token, idk
+                return await response.Content.ReadAsStreamAsync(cancellationToken);
             }
             catch
             {
@@ -67,5 +70,13 @@ namespace SIT.Manager.Avalonia.Classes
                 return null;
             }
         }
+    }
+
+    public struct TarkovRequestOptions()
+    {
+        public int CompressionProfile { get; init; } = zlibConst.Z_BEST_SPEED;
+        public string? Scheme { get; init; } = "https://";
+        public string[] AcceptEncoding { get; init; } = ["deflate", "gzip"];
+        public TimeSpan Timeout { get; init; } = TimeSpan.FromMinutes(1);
     }
 }
