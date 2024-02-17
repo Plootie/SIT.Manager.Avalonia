@@ -36,11 +36,11 @@ public sealed partial class App : Application
         services.AddSingleton<IAkiServerService, AkiServerService>();
         services.AddSingleton<IBarNotificationService, BarNotificationService>();
         services.AddTransient<IFileService, FileService>();
-        services.AddTransient<IFolderPickerService>(x => {
+        services.AddTransient<IDirectoryService>(x => {
             if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow?.StorageProvider is not { } provider) {
-                return new FolderPickerService(new MainWindow());
+                return new DirectoryService(new MainWindow());
             }
-            return new FolderPickerService(desktop.MainWindow);
+            return new DirectoryService(desktop.MainWindow);
         });
         services.AddSingleton<IManagerConfigService, ManagerConfigService>();
         services.AddTransient<IModService, ModService>();
@@ -51,6 +51,7 @@ public sealed partial class App : Application
         services.AddTransient<ModsPageViewModel>();
         services.AddTransient<SettingsPageViewModel>();
         services.AddTransient<ServerPageViewModel>();
+        // services.AddTransient<ToolsPageViewModel>();
 
         return services.BuildServiceProvider();
     }
