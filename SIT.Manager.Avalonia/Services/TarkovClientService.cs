@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.Services
 {
-    public class TarkovClientService(IManagerConfigService configService) : ManagedProcess.ManagedProcess(configService)
+    public class TarkovClientService(IManagerConfigService configService) : ManagedProcess.ManagedProcess(configService), ITarkovClientService
     {
         private const string TARKOV_EXE = "EscapeFromTarkov.exe";
         public override string ExecutableDirectory => !string.IsNullOrEmpty(_configService.Config.InstallPath) ? _configService.Config.InstallPath : string.Empty;
