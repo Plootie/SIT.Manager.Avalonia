@@ -46,7 +46,6 @@ namespace SIT.Manager.Avalonia.Classes
                 request.Content = new ByteArrayContent(contentBytes);
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 request.Content.Headers.ContentEncoding.Add("deflate");
-
             }
 
             try
@@ -59,8 +58,22 @@ namespace SIT.Manager.Avalonia.Classes
             }
             catch
             {
-                //TODO: Implement the retry with best compression on http. I hate how the OG did this
-                return null;
+                if (requestOptions.TryAgain)
+                {
+                    TarkovRequestOptions options = new()
+                    {
+                        Timeout = TimeSpan.FromSeconds(5),
+                        CompressionProfile = zlibConst.Z_BEST_COMPRESSION,
+                        Scheme = "http://",
+                        AcceptEncoding = ["deflate"]
+                    };
+                    return await Send(url, method, data, options, cancellationToken);
+                }
+                else
+                {
+                    //TODO: Replace this with proper handling. If we got here something went wrong, probably because of me
+                    throw new NotImplementedException();
+                }
             }
         }
     }
@@ -71,5 +84,6 @@ namespace SIT.Manager.Avalonia.Classes
         public string? Scheme { get; init; } = "https://";
         public string[] AcceptEncoding { get; init; } = ["deflate", "gzip"];
         public TimeSpan Timeout { get; init; } = TimeSpan.FromMinutes(1);
+        public bool TryAgain { get; init; } = false;
     }
 }
