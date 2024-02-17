@@ -38,17 +38,43 @@ namespace SIT.Manager.Avalonia.ViewModels
             _rememberMe = _configService.Config.RememberLogin;
         }
 
+        private async Task<string> LoginToServerAsync(Uri address)
+        {
+            try
+            {
+
+            }
+            catch
+            {
+
+            }
+        }
+
+        private Uri? GetUriFromAddress(string addressString)
+        {
+            try
+            {
+                UriBuilder addressBuilder = new(addressString);
+                addressBuilder.Port = addressBuilder.Port == 80 ? 6969 : addressBuilder.Port;
+                return addressBuilder.Uri;
+            }
+            catch (UriFormatException)
+            {
+                return null;
+            }
+            catch(Exception ex)
+            {
+                //Something BAAAAD has happened here
+                //TODO: Loggy & content dialog
+                return null;
+            }
+        }
+
         [RelayCommand]
         private async Task ConnectToServer()
         {
-            //TODO: Move this to its own function to be reused
-            try
-            {
-                UriBuilder addressBuilder = new(LastServer);
-                addressBuilder.Port = addressBuilder.Port == 80 ? 6969 : addressBuilder.Port;
-                LastServer = addressBuilder.ToString();
-            }
-            catch (UriFormatException)
+            Uri? serverAddress = GetUriFromAddress(LastServer);
+            if(serverAddress == null)
             {
                 await new ContentDialog()
                 {
@@ -59,9 +85,8 @@ namespace SIT.Manager.Avalonia.ViewModels
                 return;
             }
 
-            ManagerConfig config = null;
-
-            //Update config
+            //TODO: Check install path and SIT installation
+            //TODO: Save the config (and my sanity)
 
             //Connect to server
 

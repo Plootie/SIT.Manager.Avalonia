@@ -8,6 +8,7 @@ using SIT.Manager.Avalonia.Services;
 using SIT.Manager.Avalonia.ViewModels;
 using SIT.Manager.Avalonia.Views;
 using System;
+using System.Net.Http;
 
 namespace SIT.Manager.Avalonia;
 
@@ -45,6 +46,12 @@ public sealed partial class App : Application
         });
         services.AddSingleton<IManagerConfigService, ManagerConfigService>();
         services.AddSingleton<IVersionService, VersionService>();
+        services.AddSingleton(new HttpClientHandler
+        {
+            SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
+            ServerCertificateCustomValidationCallback = delegate { return true; }
+        });
+        services.AddSingleton(provider => new HttpClient(provider.GetService<HttpClientHandler>() ?? throw new ArgumentNullException()));
 
         // Viewmodels
         services.AddTransient<MainViewModel>();
