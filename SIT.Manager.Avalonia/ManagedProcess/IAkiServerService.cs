@@ -8,6 +8,5 @@ namespace SIT.Manager.Avalonia.ManagedProcess
     {
         event EventHandler<DataReceivedEventArgs>? OutputDataReceived;
         bool IsUnhandledInstanceRunning();
-        void Start();
     }
 }

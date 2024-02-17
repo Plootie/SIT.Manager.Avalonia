@@ -8,10 +8,12 @@ namespace SIT.Manager.Avalonia.ManagedProcess
 {
     public interface IManagedProcess
     {
+        string ExecutableDirectory { get; }
         string ExecutableFilePath { get; }
         RunningState State { get; }
         event EventHandler<RunningState>? RunningStateChanged;
         void Stop();
+        void Start(string? arguments = null);
     }
 
     public enum RunningState

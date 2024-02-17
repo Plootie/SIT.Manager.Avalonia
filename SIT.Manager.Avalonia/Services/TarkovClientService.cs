@@ -10,52 +10,27 @@ using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.Services
 {
-    public class TarkovClientService(IManagerConfigService configService) : ITarkovClientService
+    public class TarkovClientService(IManagerConfigService configService) : ManagedProcess.ManagedProcess(configService)
     {
-        private const string CLIENT_EXE = "EscapeFromTarkov.exe";
-        private readonly IManagerConfigService _configService = configService;
-        private Process? _gameProcess;
-        private bool _stopRequest = false;
+        private const string TARKOV_EXE = "EscapeFromTarkov.exe";
+        public override string ExecutableDirectory => !string.IsNullOrEmpty(_configService.Config.InstallPath) ? _configService.Config.InstallPath : string.Empty;
 
-        public string GameDirectory => !string.IsNullOrEmpty(_configService.Config.InstallPath) ? _configService.Config.InstallPath : string.Empty;
-        public string ExecutableFilePath => !string.IsNullOrEmpty(GameDirectory) ? Path.Combine(GameDirectory, CLIENT_EXE) : string.Empty;
+        protected override string EXECUTABLE_NAME => TARKOV_EXE;
 
-        public RunningState State { get; private set; } = RunningState.NotRunning;
-
-        public event EventHandler<RunningState>? RunningStateChanged;
-        private void ExitedEvent(object? sender, EventArgs e)
+        public override void Start(string? arguments)
         {
-            if (State == RunningState.Running && !_stopRequest)
-            {
-                State = RunningState.StoppedUnexpectedly;
-            }
-            else
-            {
-                State = RunningState.NotRunning;
-            }
-
-            _stopRequest = false;
-            RunningStateChanged?.Invoke(this, State);
-        }
-
-        public void Start(string token, string address)
-        {
-            _gameProcess = new Process()
+            _process = new Process()
             {
                 StartInfo = new(ExecutableFilePath)
                 {
-                    WorkingDirectory = GameDirectory,
+                    WorkingDirectory = ExecutableDirectory,
                     UseShellExecute = true,
-                    ArgumentList =
-                    {
-                        $"-token={token}",
-                        //TODO: Replace this with a struct that gets serialized
-                        $"-config={{\"BackendUrl\":\"{address}\",\"Version\":\"live\"}}"
-                    }
+                    Arguments = arguments
                 },
                 EnableRaisingEvents = true,
             };
-            _gameProcess.Exited += new EventHandler((sender, e) => ExitedEvent(sender, e));
+            _process.Exited += new EventHandler((sender, e) => ExitedEvent(sender, e));
+            _process.Start();
 
             if (_configService.Config.CloseAfterLaunch)
             {
@@ -69,24 +44,10 @@ namespace SIT.Manager.Avalonia.Services
                     Environment.Exit(0);
                 }
             }
-        }
-
-        public void Stop()
-        {
-            if (State == RunningState.NotRunning || _gameProcess == null || _gameProcess.HasExited)
+            else
             {
-                return;
+                UpdateRunningState(RunningState.Running);
             }
-
-            _stopRequest = true;
-
-            // Stop the server process
-            bool clsMsgSent = _gameProcess.CloseMainWindow();
-            if (!clsMsgSent)
-                _gameProcess.Kill();
-
-            _gameProcess.WaitForExit();
-            _gameProcess.Close();
         }
     }
 }
