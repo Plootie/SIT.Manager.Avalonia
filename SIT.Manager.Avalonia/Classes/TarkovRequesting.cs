@@ -76,6 +76,18 @@ namespace SIT.Manager.Avalonia.Classes
                 }
             }
         }
+
+        public async Task<string> PostJson(string url, string data)
+        {
+            using Stream postStream = await Send(url, HttpMethod.Post, data);
+            if (postStream == null)
+                return string.Empty;
+            using MemoryStream ms = new();
+            await postStream.CopyToAsync(ms);
+            return SimpleZlib.Decompress(ms.ToArray());
+        }
+
+
     }
 
     public struct TarkovRequestOptions()
