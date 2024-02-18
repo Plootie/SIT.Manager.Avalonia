@@ -75,8 +75,8 @@ namespace SIT.Manager.Avalonia.Classes
                 }
                 else
                 {
-                    //TODO: Replace this with proper handling. If we got here something went wrong, probably because of me
-                    return null;
+                    //TODO: I dislike rethrowing exceptions, the architecture of these net requests are flawed and need redesigned 
+                    throw;
                 }
             }
         }

@@ -243,6 +243,8 @@ namespace SIT.Manager.Avalonia.ViewModels
 
             //Connect to server
             string token = await LoginToServerAsync(serverAddress);
+            if (string.IsNullOrEmpty(token))
+                return;
 
             //Launch game
             Dictionary<string, string> argumentList = new()
