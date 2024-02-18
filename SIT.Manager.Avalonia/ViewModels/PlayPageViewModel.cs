@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -22,6 +23,9 @@ namespace SIT.Manager.Avalonia.ViewModels
 {
     public partial class PlayPageViewModel : ViewModelBase
     {
+        //TODO: Merge these constants into one play. Pretty sure we delcare at least one of these somewhere else already
+        private const string SIT_DLL_FILENAME = "StayInTarkov.dll";
+        private const string EFT_EXE_FILENAME = "EscapeFromTarkov.exe";
         private readonly IManagerConfigService _configService;
 
         [ObservableProperty]
@@ -163,6 +167,8 @@ namespace SIT.Manager.Avalonia.ViewModels
         [RelayCommand]
         private async Task ConnectToServer()
         {
+            //TODO: Save the config (and my sanity)
+            //TODO: Replace these checks with a more flexable solution and remove hardcoded strings
             Uri? serverAddress = GetUriFromAddress(LastServer);
             if(serverAddress == null)
             {
@@ -172,11 +178,58 @@ namespace SIT.Manager.Avalonia.ViewModels
                     Content = "Please fix your server address and try again",
                     CloseButtonText = "Ok"
                 }.ShowAsync();
+
                 return;
             }
 
-            //TODO: Check install path and SIT installation
-            //TODO: Save the config (and my sanity)
+            if (string.IsNullOrEmpty(_configService.Config.InstallPath))
+            {
+                await new ContentDialog()
+                {
+                    Title = "Config Error",
+                    Content = "'Install Path' is not configured. Go to settings and configure the installtion path.",
+                    CloseButtonText = "Ok"
+                }.ShowAsync();
+
+                return;
+            }
+
+            string SITPluginPath = Path.Combine(_configService.Config.InstallPath, "BepInEx", "plugins", SIT_DLL_FILENAME);
+            if(!File.Exists(SITPluginPath)) 
+            {
+                await new ContentDialog()
+                {
+                    Title = "Install Error",
+                    Content = $"Unable to find '{SIT_DLL_FILENAME}'. Install SIT before connecting.",
+                    CloseButtonText = "Ok"
+                }.ShowAsync();
+
+                return;
+            }
+
+            if(!File.Exists(Path.Combine(_configService.Config.InstallPath, EFT_EXE_FILENAME)))
+            {
+                await new ContentDialog()
+                {
+                    Title = "Install Error",
+                    Content = $"Unable to find '{EFT_EXE_FILENAME}' in the installation path.",
+                    CloseButtonText = "Ok"
+                }.ShowAsync();
+
+                return;
+            }
+            
+            if(LastServer.Length == 0 || Username.Length == 0 || Password.Length == 0)
+            {
+                await new ContentDialog()
+                {
+                    Title = "Input Error",
+                    Content = "Missing field.",
+                    CloseButtonText = "Ok"
+                }.ShowAsync();
+
+                return;
+            }
 
             //Connect to server
             string token = await LoginToServerAsync(serverAddress);
