@@ -34,12 +34,14 @@ namespace SIT.Manager.Avalonia.ViewModels
         private bool _rememberMe;
         private readonly HttpClient _httpClient;
         private readonly HttpClientHandler _httpClientHandler;
-        public PlayPageViewModel(IManagerConfigService configService, HttpClient httpClient, HttpClientHandler httpClientHandler)
+        private readonly ITarkovClientService _tarkovClientService;
+        public PlayPageViewModel(IManagerConfigService configService, HttpClient httpClient, HttpClientHandler httpClientHandler, ITarkovClientService tarkovClientService)
         {
             _configService = configService;
             //TODO: Check that this is the best way to implement DI for the TarkovRequesting. Prettysure service provider would be better
             _httpClient = httpClient;
             _httpClientHandler = httpClientHandler;
+            _tarkovClientService = tarkovClientService;
 
             _lastServer = _configService.Config.LastServer;
             _username = _configService.Config.Username;
@@ -64,17 +66,26 @@ namespace SIT.Manager.Avalonia.ViewModels
                 if (SessionID.Equals("failed", StringComparison.InvariantCultureIgnoreCase))
                 {
                     string connectionData = await requesting.PostJson("/launcher/server/connect", JsonSerializer.Serialize(new object()));
+                    //TODO: Give this connection data its own object to deserialize into and pull both the editions and the descriptions
+
                 }
+                else if(SessionID.Equals("invalid_password", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    //TODO: Utils.ShowInfoBar("Connect", $"Invalid password!", InfoBarSeverity.Error);
+                    //TODO: throw tarkov error
+                    return "error";
+                }
+
                 return SessionID;
             }
             catch(Exception ex)
             {
-                Debug.WriteLine(ex.Message);
-                return "";
+                //TODO: Add correct error handling here
+                return string.Empty;
             }
         }
 
-        private Uri? GetUriFromAddress(string addressString)
+        private static Uri? GetUriFromAddress(string addressString)
         {
             try
             {
@@ -113,9 +124,11 @@ namespace SIT.Manager.Avalonia.ViewModels
             //TODO: Save the config (and my sanity)
 
             //Connect to server
-            await LoginToServerAsync(serverAddress);
+            string token = await LoginToServerAsync(serverAddress);
 
             //Launch game
+            string launchArguments = $"-token={token} -config={{\"BackendUrl\":\"{serverAddress.AbsoluteUri}\",\"Version\":\"live\"}}";
+            _tarkovClientService.Start(launchArguments);
         }
     }
 }
