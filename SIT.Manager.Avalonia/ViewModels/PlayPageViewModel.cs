@@ -168,15 +168,12 @@ namespace SIT.Manager.Avalonia.ViewModels
         private async Task ConnectToServer()
         {
             ManagerConfig config = _configService.Config;
-            if(RememberMe)
-            {
-                config.Username = Username;
-                config.Password = Password;
-                config.LastServer = LastServer;
-            }
+            config.Username = Username;
+            config.Password = Password;
+            config.LastServer = LastServer;
             config.RememberLogin = RememberMe;
             _configService.UpdateConfig(config);
-            _configService.Save();
+            _configService.Save(config.RememberLogin);
 
             //TODO: Replace these checks with a more flexable solution and remove hardcoded strings
             Uri? serverAddress = GetUriFromAddress(LastServer);

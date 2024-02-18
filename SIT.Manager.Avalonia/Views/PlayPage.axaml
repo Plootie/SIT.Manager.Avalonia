@@ -17,7 +17,7 @@
 			<!--Password box-->
 			<Label Content="Password" Margin="10 10 10 0" FontFamily="{StaticResource BenderFont}" FontStyle="Oblique"/>
 			<TextBox Name="PasswordBox" Text="{Binding Password, Mode=TwoWay}" Margin="10 5 10 10" Width="150" HorizontalAlignment="Left" PasswordChar="●" Watermark="Enter Password..."/>
-			<CheckBox Name="RememberMeCheck" Content="Remember Me" Margin="10" IsChecked="False"/>
+			<CheckBox Name="RememberMeCheck" Content="Remember Me" Margin="10" IsChecked="{Binding RememberMe}"/>
 			<Button Name="ConnectButton" Command="{Binding ConnectToServerCommand}" Content="Connect" ToolTip.Tip="Connect to the server" Margin="10"/>
 		</StackPanel>
 	</Grid>
