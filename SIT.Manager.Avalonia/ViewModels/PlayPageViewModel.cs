@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Controls.ApplicationLifetimes;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
 using SIT.Manager.Avalonia.Classes;
@@ -127,8 +128,22 @@ namespace SIT.Manager.Avalonia.ViewModels
             string token = await LoginToServerAsync(serverAddress);
 
             //Launch game
+            //TODO: Change this to a serialized object
             string launchArguments = $"-token={token} -config={{\"BackendUrl\":\"{serverAddress.AbsoluteUri}\",\"Version\":\"live\"}}";
             _tarkovClientService.Start(launchArguments);
+
+            if (_configService.Config.CloseAfterLaunch)
+            {
+                IApplicationLifetime? lifetime = App.Current.ApplicationLifetime;
+                if (lifetime != null && lifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
+                {
+                    desktopLifetime.Shutdown();
+                }
+                else
+                {
+                    Environment.Exit(0);
+                }
+            }
         }
     }
 }
