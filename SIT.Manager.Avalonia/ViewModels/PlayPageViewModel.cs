@@ -73,7 +73,7 @@ namespace SIT.Manager.Avalonia.ViewModels
                 };
 
                 string SessionID = await requesting.PostJson("/launcher/profile/login", JsonSerializer.Serialize(loginInfo));
-                
+
                 if (SessionID.Equals("failed", StringComparison.InvariantCultureIgnoreCase))
                 {
                     string connectionData = await requesting.PostJson("/launcher/server/connect", JsonSerializer.Serialize(new object()));
@@ -117,15 +117,24 @@ namespace SIT.Manager.Avalonia.ViewModels
                 }
                 else if(SessionID.Equals("invalid_password", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    //TODO: Utils.ShowInfoBar("Connect", $"Invalid password!", InfoBarSeverity.Error);
                     throw new IncorrectServerPasswordException();
                 }
 
                 return SessionID;
             }
-            catch(Exception ex)
+            catch(IncorrectServerPasswordException)
             {
-                //TODO: Add correct error handling here
+                //TODO: Utils.ShowInfoBar("Connect", $"Invalid password!", InfoBarSeverity.Error);
+            }
+            catch (Exception ex)
+            {
+                await new ContentDialog()
+                {
+                    Title = "Login Error",
+                    Content = $"Unable to communicate with the server\n{ex.Message}",
+                    CloseButtonText = "Ok"
+                }.ShowAsync();
+
                 return string.Empty;
             }
         }
