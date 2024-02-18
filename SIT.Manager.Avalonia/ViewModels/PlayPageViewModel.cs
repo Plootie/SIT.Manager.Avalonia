@@ -142,8 +142,12 @@ namespace SIT.Manager.Avalonia.ViewModels
             string token = await LoginToServerAsync(serverAddress);
 
             //Launch game
-            //TODO: Change this to a serialized object
-            string launchArguments = $"-token={token} -config={{\"BackendUrl\":\"{serverAddress.AbsoluteUri}\",\"Version\":\"live\"}}";
+            Dictionary<string, string> argumentList = new()
+            {
+                { "-token", token },
+                { "-config", JsonSerializer.Serialize(new TarkovLaunchConfig{ BackendUrl = serverAddress.AbsoluteUri }) }
+            };
+            string launchArguments = string.Join(' ', argumentList.Select(argument => $"{argument.Key}={argument.Value}"));
             _tarkovClientService.Start(launchArguments);
 
             if (_configService.Config.CloseAfterLaunch)
