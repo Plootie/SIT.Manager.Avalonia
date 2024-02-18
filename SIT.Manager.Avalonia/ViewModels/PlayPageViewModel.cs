@@ -76,21 +76,19 @@ namespace SIT.Manager.Avalonia.ViewModels
                 {
                     string connectionData = await requesting.PostJson("/launcher/server/connect", JsonSerializer.Serialize(new object()));
                     AkiServerConnectionResponse? serverResponse =
-                        JsonSerializer.Deserialize<AkiServerConnectionResponse>(connectionData) ?? throw new IncorrectServerPasswordException();
+                        JsonSerializer.Deserialize<AkiServerConnectionResponse>(connectionData) ?? throw new JsonException("Server returned invalid json.");
                     TarkovEdition[] editions = new TarkovEdition[serverResponse.Editions.Length];
                     for(int i = 0; i  < editions.Length; i++)
                     {
                         string editionStr = serverResponse.Editions[i];
                         string descriptionStr = serverResponse.Descriptions[editionStr];
                         editions[i] = new TarkovEdition(editionStr, descriptionStr);
-                        Debug.WriteLine($"New TarkovEdition: {editionStr}, {descriptionStr}");
                     }
                 }
                 else if(SessionID.Equals("invalid_password", StringComparison.InvariantCultureIgnoreCase))
                 {
                     //TODO: Utils.ShowInfoBar("Connect", $"Invalid password!", InfoBarSeverity.Error);
-                    //TODO: throw tarkov error
-                    return "error";
+                    throw new IncorrectServerPasswordException();
                 }
 
                 return SessionID;
