@@ -11,13 +11,12 @@ namespace SIT.Manager.Avalonia.Classes
     [Serializable]
     public class TarkovLoginInfo
     {
-        private const string EDITION = "Edge Of Darkness";
         [JsonPropertyName("username")]
         public string Username { get; init; } = string.Empty;
         [JsonPropertyName("email")]
         public string Email => Username;
         [JsonPropertyName("edition")]
-        public string Edition => EDITION;
+        public string Edition { get; set; } = "Edge Of Darkness";
         [JsonPropertyName("password")]
         public string Password { get; init; } = string.Empty;
         [JsonPropertyName("backendUrl")]

@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
+using Microsoft.Win32;
 using SIT.Manager.Avalonia.Classes;
 using SIT.Manager.Avalonia.Classes.Exceptions;
 using SIT.Manager.Avalonia.ManagedProcess;
@@ -58,6 +59,7 @@ namespace SIT.Manager.Avalonia.ViewModels
             _rememberMe = _configService.Config.RememberLogin;
         }
 
+        //TODO: Refactor this so avoid the repeat after registering. This also violates the one purpose rule anyway
         private async Task<string> LoginToServerAsync(Uri address)
         {
             try
@@ -77,6 +79,7 @@ namespace SIT.Manager.Avalonia.ViewModels
                     string connectionData = await requesting.PostJson("/launcher/server/connect", JsonSerializer.Serialize(new object()));
                     AkiServerConnectionResponse? serverResponse =
                         JsonSerializer.Deserialize<AkiServerConnectionResponse>(connectionData) ?? throw new JsonException("Server returned invalid json.");
+
                     TarkovEdition[] editions = new TarkovEdition[serverResponse.Editions.Length];
                     for(int i = 0; i  < editions.Length; i++)
                     {
@@ -84,6 +87,33 @@ namespace SIT.Manager.Avalonia.ViewModels
                         string descriptionStr = serverResponse.Descriptions[editionStr];
                         editions[i] = new TarkovEdition(editionStr, descriptionStr);
                     }
+
+                    ContentDialogResult createAccountResponse = await new ContentDialog()
+                    {
+                        Title = "Account Not Found",
+                        Content = "Your account has not been found, would you like to register a new account with these credentials?",
+                        IsPrimaryButtonEnabled = true,
+                        PrimaryButtonText = "Yes",
+                        CloseButtonText = "No"
+                    }.ShowAsync();
+
+                    if (createAccountResponse == ContentDialogResult.Primary)
+                    {
+                        //TODO: SelectEditionDialog
+
+                        string edition = string.Empty; // selectWindow.edition;
+                        if (!string.IsNullOrEmpty(edition))
+                            loginInfo.Edition = edition;
+
+                        string serializedLoginData = JsonSerializer.Serialize(loginInfo);
+                        //Register new account
+                        SessionID = await requesting.PostJson("/launcher/profile/register", serializedLoginData);
+
+                        //Attempt to login after registering
+                        SessionID = await requesting.PostJson("/launcher/profile/login", serializedLoginData);
+                    }
+                    else
+                        return string.Empty;
                 }
                 else if(SessionID.Equals("invalid_password", StringComparison.InvariantCultureIgnoreCase))
                 {
