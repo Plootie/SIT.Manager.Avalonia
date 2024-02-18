@@ -6,6 +6,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Threading.Tasks;
+using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.ManagedProcess;
 
 namespace SIT.Manager.Avalonia.Services
 {

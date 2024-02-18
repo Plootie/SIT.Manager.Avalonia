@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <Reference Include="bsg.componentace.compression.libs.zlib">
-      <HintPath>Resources\bsg.componentace.compression.libs.zlib.dll</HintPath>
+      <HintPath>..\..\..\..\Desktop\Tarkov\SIT\bsg.componentace.compression.libs.zlib.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Net.Http.Headers;
 using ComponentAce.Compression.Libs.zlib;
 using System.Threading;
+using System.Diagnostics;
 
 namespace SIT.Manager.Avalonia.Classes
 {
@@ -24,12 +25,13 @@ namespace SIT.Manager.Avalonia.Classes
             _httpClientHandler = httpClientHandler;
         }
 
-        private async Task<Stream> Send(string url, HttpMethod? method = null, string? data = null, TarkovRequestOptions requestOptions = default, CancellationToken cancellationToken = default)
+        private async Task<Stream> Send(string url, HttpMethod? method = null, string? data = null, TarkovRequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             //TODO: Clean this, kinda icky
             method ??= HttpMethod.Get;
+            requestOptions ??= new TarkovRequestOptions();
             //TODO: Look at making these default headers. Not sure if the added overhead of setting up each request is justifiable with keeping a single instance
-            UriBuilder serverUriBuilder = new(requestOptions.Scheme, RemoteEndPoint.Host, RemoteEndPoint.Port, url);
+            UriBuilder serverUriBuilder = new(requestOptions.SchemeOverride ?? RemoteEndPoint.Scheme, RemoteEndPoint.Host, RemoteEndPoint.Port, url);
             HttpRequestMessage request = new(method, serverUriBuilder.Uri);
             request.Headers.ExpectContinue = true;
 
@@ -46,6 +48,7 @@ namespace SIT.Manager.Avalonia.Classes
                 request.Content = new ByteArrayContent(contentBytes);
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 request.Content.Headers.ContentEncoding.Add("deflate");
+                request.Content.Headers.Add("Content-Length", contentBytes.Length.ToString());
             }
 
             try
@@ -54,9 +57,9 @@ namespace SIT.Manager.Avalonia.Classes
                 cts.CancelAfter((int)Math.Round(requestOptions.Timeout.TotalMilliseconds));
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cts.Token);
                 cts.TryReset(); //This is mostly to shut the compiler up about passing the token, idk
-                return await response.Content.ReadAsStreamAsync(cancellationToken);
+                return await response.Content.ReadAsStreamAsync();
             }
-            catch
+            catch(HttpRequestException ex)
             {
                 if (requestOptions.TryAgain)
                 {
@@ -64,15 +67,16 @@ namespace SIT.Manager.Avalonia.Classes
                     {
                         Timeout = TimeSpan.FromSeconds(5),
                         CompressionProfile = zlibConst.Z_BEST_COMPRESSION,
-                        Scheme = "http://",
-                        AcceptEncoding = ["deflate"]
+                        SchemeOverride = "http://",
+                        AcceptEncoding = ["deflate"],
+                        TryAgain = false
                     };
                     return await Send(url, method, data, options, cancellationToken);
                 }
                 else
                 {
                     //TODO: Replace this with proper handling. If we got here something went wrong, probably because of me
-                    throw new NotImplementedException();
+                    return null;
                 }
             }
         }
@@ -90,12 +94,12 @@ namespace SIT.Manager.Avalonia.Classes
 
     }
 
-    public struct TarkovRequestOptions()
+    public class TarkovRequestOptions()
     {
         public int CompressionProfile { get; init; } = zlibConst.Z_BEST_SPEED;
-        public string? Scheme { get; init; } = "https://";
+        public string? SchemeOverride { get; init; }
         public string[] AcceptEncoding { get; init; } = ["deflate", "gzip"];
         public TimeSpan Timeout { get; init; } = TimeSpan.FromMinutes(1);
-        public bool TryAgain { get; init; } = false;
+        public bool TryAgain { get; init; } = true;
     }
 }

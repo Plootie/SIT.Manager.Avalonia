@@ -1,14 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
+using SIT.Manager.Avalonia.Classes;
 using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.ViewModels
@@ -28,9 +32,14 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         [ObservableProperty]
         private bool _rememberMe;
-        public PlayPageViewModel(IManagerConfigService configService)
+        private readonly HttpClient _httpClient;
+        private readonly HttpClientHandler _httpClientHandler;
+        public PlayPageViewModel(IManagerConfigService configService, HttpClient httpClient, HttpClientHandler httpClientHandler)
         {
             _configService = configService;
+            //TODO: Check that this is the best way to implement DI for the TarkovRequesting. Prettysure service provider would be better
+            _httpClient = httpClient;
+            _httpClientHandler = httpClientHandler;
 
             _lastServer = _configService.Config.LastServer;
             _username = _configService.Config.Username;
@@ -42,11 +51,26 @@ namespace SIT.Manager.Avalonia.ViewModels
         {
             try
             {
+                TarkovRequesting requesting = new(address, _httpClient, _httpClientHandler);
+                TarkovLoginInfo loginInfo = new()
+                {
+                    Username = Username,
+                    Password = Password,
+                    BackendUrl = address.AbsoluteUri.Trim(['/', '\\'])
+                };
 
+                string SessionID = await requesting.PostJson("/launcher/profile/login", JsonSerializer.Serialize(loginInfo));
+                
+                if (SessionID.Equals("failed", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    string connectionData = await requesting.PostJson("/launcher/server/connect", JsonSerializer.Serialize(new object()));
+                }
+                return SessionID;
             }
-            catch
+            catch(Exception ex)
             {
-
+                Debug.WriteLine(ex.Message);
+                return "";
             }
         }
 
@@ -89,6 +113,7 @@ namespace SIT.Manager.Avalonia.ViewModels
             //TODO: Save the config (and my sanity)
 
             //Connect to server
+            await LoginToServerAsync(serverAddress);
 
             //Launch game
         }
