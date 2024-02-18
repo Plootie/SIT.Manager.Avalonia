@@ -1,13 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FluentAvalonia.UI.Controls;
+using SIT.Manager.Avalonia.Models;
+using SIT.Manager.Avalonia.Models.Messages;
 using SIT.Manager.Avalonia.Services;
+using SIT.Manager.Avalonia.Views;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.ViewModels
 {
-    public class ToolsPageViewModel : ViewModelBase
+    public partial class ToolsPageViewModel : ViewModelBase
     {
         private readonly IManagerConfigService _configService;
         private readonly IDirectoryService _directoryService;
@@ -24,8 +28,6 @@ namespace SIT.Manager.Avalonia.ViewModels
         public IAsyncRelayCommand InstallServerCommand { get; }
 
         public IAsyncRelayCommand OpenEFTLogCommand { get; }
-
-        public IAsyncRelayCommand OpenLocationEditorCommand { get; }
 
         public IAsyncRelayCommand ClearCacheCommand { get; }
 
@@ -116,6 +118,12 @@ namespace SIT.Manager.Avalonia.ViewModels
                 };
                 await contentDialog.ShowAsync();
             }
+        }
+
+        [RelayCommand]
+        private void OpenLocationEditor() {
+            PageNavigation pageNavigation = new(typeof(LocationEditorView), false);
+            WeakReferenceMessenger.Default.Send(new PageNavigationMessage(pageNavigation));
         }
     }
 }
