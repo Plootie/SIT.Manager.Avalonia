@@ -125,6 +125,7 @@ namespace SIT.Manager.Avalonia.ViewModels
             catch(IncorrectServerPasswordException)
             {
                 //TODO: Utils.ShowInfoBar("Connect", $"Invalid password!", InfoBarSeverity.Error);
+                return string.Empty;
             }
             catch (Exception ex)
             {
