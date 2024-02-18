@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
 using SIT.Manager.Avalonia.Classes;
+using SIT.Manager.Avalonia.Classes.Exceptions;
 using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
 using System;
@@ -36,13 +37,20 @@ namespace SIT.Manager.Avalonia.ViewModels
         private readonly HttpClient _httpClient;
         private readonly HttpClientHandler _httpClientHandler;
         private readonly ITarkovClientService _tarkovClientService;
-        public PlayPageViewModel(IManagerConfigService configService, HttpClient httpClient, HttpClientHandler httpClientHandler, ITarkovClientService tarkovClientService)
+        private readonly IAkiServerService _akiServerService;
+        public PlayPageViewModel(
+            IManagerConfigService configService,
+            HttpClient httpClient,
+            HttpClientHandler httpClientHandler,
+            ITarkovClientService tarkovClientService,
+            IAkiServerService akiServerService)
         {
             _configService = configService;
             //TODO: Check that this is the best way to implement DI for the TarkovRequesting. Prettysure service provider would be better
             _httpClient = httpClient;
             _httpClientHandler = httpClientHandler;
             _tarkovClientService = tarkovClientService;
+            _akiServerService = akiServerService;
 
             _lastServer = _configService.Config.LastServer;
             _username = _configService.Config.Username;
@@ -67,8 +75,16 @@ namespace SIT.Manager.Avalonia.ViewModels
                 if (SessionID.Equals("failed", StringComparison.InvariantCultureIgnoreCase))
                 {
                     string connectionData = await requesting.PostJson("/launcher/server/connect", JsonSerializer.Serialize(new object()));
-                    //TODO: Give this connection data its own object to deserialize into and pull both the editions and the descriptions
-
+                    AkiServerConnectionResponse? serverResponse =
+                        JsonSerializer.Deserialize<AkiServerConnectionResponse>(connectionData) ?? throw new IncorrectServerPasswordException();
+                    TarkovEdition[] editions = new TarkovEdition[serverResponse.Editions.Length];
+                    for(int i = 0; i  < editions.Length; i++)
+                    {
+                        string editionStr = serverResponse.Editions[i];
+                        string descriptionStr = serverResponse.Descriptions[editionStr];
+                        editions[i] = new TarkovEdition(editionStr, descriptionStr);
+                        Debug.WriteLine($"New TarkovEdition: {editionStr}, {descriptionStr}");
+                    }
                 }
                 else if(SessionID.Equals("invalid_password", StringComparison.InvariantCultureIgnoreCase))
                 {

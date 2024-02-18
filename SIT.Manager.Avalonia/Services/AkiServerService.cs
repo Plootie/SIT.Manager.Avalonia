@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using SIT.Manager.Avalonia.Classes;
 using SIT.Manager.Avalonia.ManagedProcess;
 
 namespace SIT.Manager.Avalonia.Services
@@ -12,6 +13,7 @@ namespace SIT.Manager.Avalonia.Services
         protected override string EXECUTABLE_NAME => SERVER_EXE;
         public override string ExecutableDirectory => !string.IsNullOrEmpty(_configService.Config.AkiServerPath) ? _configService.Config.AkiServerPath : string.Empty;
         public event EventHandler<DataReceivedEventArgs>? OutputDataReceived;
+        public TarkovEdition[] TarkovEditions { get; private set; } = [];
         public bool IsUnhandledInstanceRunning() {
             Process[] akiServerProcesses = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SERVER_EXE));
 
