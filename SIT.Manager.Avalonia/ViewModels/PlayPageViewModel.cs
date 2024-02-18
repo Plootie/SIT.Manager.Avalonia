@@ -167,7 +167,17 @@ namespace SIT.Manager.Avalonia.ViewModels
         [RelayCommand]
         private async Task ConnectToServer()
         {
-            //TODO: Save the config (and my sanity)
+            ManagerConfig config = _configService.Config;
+            if(RememberMe)
+            {
+                config.Username = Username;
+                config.Password = Password;
+                config.LastServer = LastServer;
+            }
+            config.RememberLogin = RememberMe;
+            _configService.UpdateConfig(config);
+            _configService.Save();
+
             //TODO: Replace these checks with a more flexable solution and remove hardcoded strings
             Uri? serverAddress = GetUriFromAddress(LastServer);
             if(serverAddress == null)
