@@ -284,10 +284,7 @@ namespace SIT.Manager.Avalonia.ViewModels
                 async void serverStartEventHandler(object? sender, EventArgs e)
                 {
                     cts.Dispose();
-                    await Dispatcher.UIThread.Invoke(async () =>
-                    {
-                        await ConnectToServer();
-                    });
+                    await Dispatcher.UIThread.InvokeAsync(ConnectToServer);
                     _akiServerService.ServerStarted -= serverStartEventHandler;
                 }
 
