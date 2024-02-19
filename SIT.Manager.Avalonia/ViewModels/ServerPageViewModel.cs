@@ -42,6 +42,9 @@ namespace SIT.Manager.Avalonia.ViewModels
 
             _akiServerService.OutputDataReceived += AkiServer_OutputDataReceived;
             _akiServerService.RunningStateChanged += AkiServer_RunningStateChanged;
+
+            if(_akiServerService.State != RunningState.NotRunning)
+                AkiServer_RunningStateChanged(null, _akiServerService.State);
         }
 
         private void AddConsole(string text) {
