@@ -16,7 +16,6 @@ namespace SIT.Manager.Avalonia.Services
         public event EventHandler<DataReceivedEventArgs>? OutputDataReceived;
         public event EventHandler? ServerStarted;
         public bool IsStarted { get; private set; } = false;
-        public TarkovEdition[] TarkovEditions { get; private set; } = [];
         public bool IsUnhandledInstanceRunning() {
             Process[] akiServerProcesses = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SERVER_EXE));
 

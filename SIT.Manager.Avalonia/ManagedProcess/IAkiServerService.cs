@@ -7,7 +7,6 @@ namespace SIT.Manager.Avalonia.ManagedProcess
 {
     public interface IAkiServerService : IManagedProcess
     {
-        TarkovEdition[] TarkovEditions { get; }
         event EventHandler<DataReceivedEventArgs>? OutputDataReceived;
         event EventHandler? ServerStarted;
         public bool IsStarted { get; }
