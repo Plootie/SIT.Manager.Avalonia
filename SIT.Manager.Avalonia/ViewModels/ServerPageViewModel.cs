@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using static SIT.Manager.Avalonia.Services.AkiServerService;
 
 namespace SIT.Manager.Avalonia.ViewModels
@@ -27,6 +28,7 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         private readonly IAkiServerService _akiServerService;
         private readonly IManagerConfigService _configService;
+        private readonly IDirectoryService _directoryService;
 
         [ObservableProperty]
         private Symbol _startServerButtonSymbolIcon = Symbol.Play;
@@ -36,9 +38,14 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         public ObservableCollection<ConsoleText> ConsoleOutput { get; } = [];
 
-        public ServerPageViewModel(IManagerConfigService configService, IAkiServerService akiServerService) {
-            _configService = configService;
+        public IAsyncRelayCommand EditServerConfigCommand { get; }
+
+        public ServerPageViewModel(IAkiServerService akiServerService, IManagerConfigService configService, IDirectoryService directoryService) {
             _akiServerService = akiServerService;
+            _configService = configService;
+            _directoryService = directoryService;
+
+            EditServerConfigCommand = new AsyncRelayCommand(EditServerConfig);
 
             _akiServerService.OutputDataReceived += AkiServer_OutputDataReceived;
             _akiServerService.RunningStateChanged += AkiServer_RunningStateChanged;
@@ -93,9 +100,14 @@ namespace SIT.Manager.Avalonia.ViewModels
             });
         }
 
-        [RelayCommand]
-        private void EditServerConfig() {
-            // TODO here so VS picks it up as it doesn't in XAML -- this literally does nothing and as far as I can see was never implemented in the current manager either
+        private async Task EditServerConfig() {
+            string serverPath = _configService.Config.AkiServerPath;
+            if (string.IsNullOrEmpty(serverPath)) {
+                return;
+            }
+
+            string serverConfigPath = Path.Combine(serverPath, "Aki_Data", "Server", "configs");
+            await _directoryService.OpenDirectoryAsync(serverConfigPath);
         }
 
         [RelayCommand]
