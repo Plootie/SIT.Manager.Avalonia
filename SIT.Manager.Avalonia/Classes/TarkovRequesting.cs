@@ -9,6 +9,8 @@ using System.Net.Http.Headers;
 using ComponentAce.Compression.Libs.zlib;
 using System.Threading;
 using System.Diagnostics;
+using SIT.Manager.Avalonia.Classes.Exceptions;
+using System.Text.Json;
 
 namespace SIT.Manager.Avalonia.Classes
 {
@@ -90,7 +92,27 @@ namespace SIT.Manager.Avalonia.Classes
             return SimpleZlib.Decompress(ms.ToArray());
         }
 
+        public async Task<string> LoginAsync(TarkovLoginInfo loginInfo)
+        {
+            string SessionID = await PostJson("/launcher/profile/login", JsonSerializer.Serialize(loginInfo));
+            if (SessionID.Equals("invalid_password", StringComparison.InvariantCultureIgnoreCase))
+                throw new IncorrectServerPasswordException();
+            else if (SessionID.Equals("failed", StringComparison.InvariantCultureIgnoreCase))
+                throw new AccountNotFoundException();
+            return SessionID;
+        }
 
+        public async Task<bool> RegisterAccountAsync(TarkovLoginInfo loginInfo)
+        {
+            string serverResponse = await PostJson("/launcher/profile/register", JsonSerializer.Serialize(loginInfo));
+            return serverResponse.Equals("ok", StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        public async Task<AkiServerConnectionResponse> QueryServer()
+        {
+            string connectionData = await PostJson("/launcher/server/connect", JsonSerializer.Serialize(new object()));
+            return JsonSerializer.Deserialize<AkiServerConnectionResponse>(connectionData) ?? throw new JsonException("Server returned invalid json.");
+        }
     }
 
     public class TarkovRequestOptions()

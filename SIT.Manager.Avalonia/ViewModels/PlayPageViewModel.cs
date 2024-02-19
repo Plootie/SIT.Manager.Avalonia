@@ -64,73 +64,65 @@ namespace SIT.Manager.Avalonia.ViewModels
             _rememberMe = _configService.Config.RememberLogin;
         }
 
+
         //TODO: Refactor this so avoid the repeat after registering. This also violates the one purpose rule anyway
         private async Task<string> LoginToServerAsync(Uri address)
         {
+            TarkovRequesting requesting = new(address, _httpClient, _httpClientHandler);
+            TarkovLoginInfo loginInfo = new()
+            {
+                Username = Username,
+                Password = Password,
+                BackendUrl = address.AbsoluteUri.Trim(['/', '\\'])
+            };
+
             try
             {
-                TarkovRequesting requesting = new(address, _httpClient, _httpClientHandler);
-                TarkovLoginInfo loginInfo = new()
-                {
-                    Username = Username,
-                    Password = Password,
-                    BackendUrl = address.AbsoluteUri.Trim(['/', '\\'])
-                };
-
-                string SessionID = await requesting.PostJson("/launcher/profile/login", JsonSerializer.Serialize(loginInfo));
-
-                if (SessionID.Equals("failed", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    string connectionData = await requesting.PostJson("/launcher/server/connect", JsonSerializer.Serialize(new object()));
-                    AkiServerConnectionResponse? serverResponse =
-                        JsonSerializer.Deserialize<AkiServerConnectionResponse>(connectionData) ?? throw new JsonException("Server returned invalid json.");
-
-                    TarkovEdition[] editions = new TarkovEdition[serverResponse.Editions.Length];
-                    for(int i = 0; i  < editions.Length; i++)
-                    {
-                        string editionStr = serverResponse.Editions[i];
-                        string descriptionStr = serverResponse.Descriptions[editionStr];
-                        editions[i] = new TarkovEdition(editionStr, descriptionStr);
-                    }
-
-                    ContentDialogResult createAccountResponse = await new ContentDialog()
-                    {
-                        Title = "Account Not Found",
-                        Content = "Your account has not been found, would you like to register a new account with these credentials?",
-                        IsPrimaryButtonEnabled = true,
-                        PrimaryButtonText = "Yes",
-                        CloseButtonText = "No"
-                    }.ShowAsync();
-
-                    if (createAccountResponse == ContentDialogResult.Primary)
-                    {
-                        //TODO: SelectEditionDialog
-
-                        string edition = "Edge Of Darkness";
-                        if (!string.IsNullOrEmpty(edition))
-                            loginInfo.Edition = edition;
-
-                        string serializedLoginData = JsonSerializer.Serialize(loginInfo);
-                        //Register new account
-                        SessionID = await requesting.PostJson("/launcher/profile/register", serializedLoginData);
-
-                        //Attempt to login after registering
-                        SessionID = await requesting.PostJson("/launcher/profile/login", serializedLoginData);
-                    }
-                    else
-                        return string.Empty;
-                }
-                else if(SessionID.Equals("invalid_password", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    throw new IncorrectServerPasswordException();
-                }
-
+                string SessionID = await requesting.LoginAsync(loginInfo);
                 return SessionID;
+            }
+            catch (AccountNotFoundException)
+            {
+                AkiServerConnectionResponse serverResponse = await requesting.QueryServer();
+
+                TarkovEdition[] editions = new TarkovEdition[serverResponse.Editions.Length];
+                for (int i = 0; i < editions.Length; i++)
+                {
+                    string editionStr = serverResponse.Editions[i];
+                    string descriptionStr = serverResponse.Descriptions[editionStr];
+                    editions[i] = new TarkovEdition(editionStr, descriptionStr);
+                }
+
+                ContentDialogResult createAccountResponse = await new ContentDialog()
+                {
+                    Title = "Account Not Found",
+                    Content = "Your account has not been found, would you like to register a new account with these credentials?",
+                    IsPrimaryButtonEnabled = true,
+                    PrimaryButtonText = "Yes",
+                    CloseButtonText = "No"
+                }.ShowAsync();
+
+                if (createAccountResponse == ContentDialogResult.Primary)
+                {
+                    //TODO: SelectEditionDialog
+                    string edition = "Edge Of Darkness";
+                    if (!string.IsNullOrEmpty(edition))
+                        loginInfo.Edition = edition;
+
+                    string serializedLoginData = JsonSerializer.Serialize(loginInfo);
+                    //Register new account
+                    await requesting.RegisterAccountAsync(loginInfo);
+
+                    //Attempt to login after registering
+                    return await requesting.LoginAsync(loginInfo);
+                }
+                else
+                    return string.Empty;
             }
             catch(IncorrectServerPasswordException)
             {
+                Debug.WriteLine("DEBUG: Incorrect password");
                 //TODO: Utils.ShowInfoBar("Connect", $"Invalid password!", InfoBarSeverity.Error);
-                return string.Empty;
             }
             catch (Exception ex)
             {
@@ -140,9 +132,8 @@ namespace SIT.Manager.Avalonia.ViewModels
                     Content = $"Unable to communicate with the server\n{ex.Message}",
                     CloseButtonText = "Ok"
                 }.ShowAsync();
-
-                return string.Empty;
             }
+            return string.Empty;
         }
 
         private static Uri? GetUriFromAddress(string addressString)
