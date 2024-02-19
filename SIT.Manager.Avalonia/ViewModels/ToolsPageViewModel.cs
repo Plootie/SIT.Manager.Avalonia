@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FluentAvalonia.UI.Controls;
+using SIT.Manager.Avalonia.Controls;
 using SIT.Manager.Avalonia.Models;
 using SIT.Manager.Avalonia.Models.Messages;
 using SIT.Manager.Avalonia.Services;
@@ -13,9 +14,12 @@ namespace SIT.Manager.Avalonia.ViewModels
 {
     public partial class ToolsPageViewModel : ViewModelBase
     {
+        private readonly IAkiServerService _akiServerService;
+        private readonly IBarNotificationService _barNotificationService;
         private readonly IManagerConfigService _configService;
         private readonly IDirectoryService _directoryService;
         private readonly IFileService _fileService;
+        private readonly ITarkovClientService _tarkovClientService;
 
         public IAsyncRelayCommand InstallSITCommand { get; }
 
@@ -31,15 +35,49 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         public IAsyncRelayCommand ClearCacheCommand { get; }
 
-        public ToolsPageViewModel(IManagerConfigService configService, IDirectoryService directoryService, IFileService fileService) {
+        public ToolsPageViewModel(IAkiServerService akiServerService,
+                                  IBarNotificationService barNotificationService,
+                                  IManagerConfigService configService,
+                                  IDirectoryService directoryService,
+                                  IFileService fileService,
+                                  ITarkovClientService tarkovClientService) {
+            _akiServerService = akiServerService;
+            _barNotificationService = barNotificationService;
             _configService = configService;
             _directoryService = directoryService;
             _fileService = fileService;
+            _tarkovClientService = tarkovClientService;
 
+            InstallSITCommand = new AsyncRelayCommand(InstallSIT);
             OpenEFTFolderCommand = new AsyncRelayCommand(OpenETFFolder);
             OpenBepInExFolderCommand = new AsyncRelayCommand(OpenBepInExFolder);
             OpenSITConfigCommand = new AsyncRelayCommand(OpenSITConfig);
+            InstallServerCommand = new AsyncRelayCommand(InstallServer);
             OpenEFTLogCommand = new AsyncRelayCommand(OpenEFTLog);
+            ClearCacheCommand = new AsyncRelayCommand(ClearCache);
+        }
+
+        private async Task InstallSIT() {
+            /* TODO
+            GithubRelease? selectedVersion;
+
+            SelectSitVersionDialog selectWindow = new()
+            {
+                XamlRoot = Content.XamlRoot
+            };
+
+            ContentDialogResult result = await selectWindow.ShowAsync();
+
+            selectedVersion = selectWindow.version;
+
+            if (selectedVersion == null || result != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            await Task.Run(() => Utils.InstallSIT(selectedVersion));
+            ManagerConfig.Save();
+            */
         }
 
         private async Task OpenETFFolder() {
@@ -103,6 +141,17 @@ namespace SIT.Manager.Avalonia.ViewModels
             }
         }
 
+        private async Task InstallServer() {
+            SelectServerVersionDialog selectWindow = new();
+            ContentDialogResult result = await selectWindow.ShowAsync();
+            if (result == ContentDialogResult.Primary) {
+                GithubRelease? selectedVersion = selectWindow.GetSelectedGithubRelease();
+                if (selectedVersion != null) {
+                    await _akiServerService.Install(selectedVersion);
+                }
+            }
+        }
+
         private async Task OpenEFTLog() {
             // TODO fix this for linux :)
             string logPath = @"%userprofile%\AppData\LocalLow\Battlestate Games\EscapeFromTarkov\Player.log";
@@ -124,6 +173,40 @@ namespace SIT.Manager.Avalonia.ViewModels
         private void OpenLocationEditor() {
             PageNavigation pageNavigation = new(typeof(LocationEditorView), false);
             WeakReferenceMessenger.Default.Send(new PageNavigationMessage(pageNavigation));
+        }
+
+        private async Task ClearCache() {
+            // Prompt the user for their choice using a dialog.
+            ContentDialog choiceDialog = new() {
+                Title = "Clear Cache",
+                Content = "Do you want to clear the EFT local cache or clear all cache?",
+                PrimaryButtonText = "Clear EFT Local Cache",
+                SecondaryButtonText = "Clear All Cache",
+                CloseButtonText = "Cancel"
+            };
+            ContentDialogResult result = await choiceDialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary) {
+                // User chose to clear EFT local cache.
+                try {
+                    _tarkovClientService.ClearLocalCache();
+                }
+                catch (Exception ex) {
+                    // Handle any exceptions that may occur during the process.
+                    _barNotificationService.ShowError("Error", $"An error occurred: {ex.Message}");
+                }
+            }
+            else if (result == ContentDialogResult.Secondary) {
+                // User chose to clear everything.
+                try {
+                    _akiServerService.ClearCache();
+                    _tarkovClientService.ClearCache();
+                }
+                catch (Exception ex) {
+                    // Handle any exceptions that may occur during the process.
+                    _barNotificationService.ShowError("Error", $"An error occurred: {ex.Message}");
+                }
+            }
         }
     }
 }

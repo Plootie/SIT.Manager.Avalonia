@@ -44,6 +44,7 @@ public sealed partial class App : Application
         });
         services.AddSingleton<IManagerConfigService, ManagerConfigService>();
         services.AddTransient<IModService, ModService>();
+        services.AddSingleton<ITarkovClientService, TarkovClientService>();
         services.AddSingleton<IVersionService, VersionService>();
 
         // Viewmodels
