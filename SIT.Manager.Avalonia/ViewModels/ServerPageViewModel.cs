@@ -23,7 +23,7 @@ namespace SIT.Manager.Avalonia.ViewModels
         private const int CONSOLE_LINE_LIMIT = 10_000;
 
         [GeneratedRegex("\\x1B(?:[@-Z\\\\-_]|\\[[0-?]*[ -/]*[@-~])")]
-        private static partial Regex ConsoleTextRemoveANSIFilterRegex();
+        internal static partial Regex ConsoleTextRemoveANSIFilterRegex();
 
         private readonly IAkiServerService _akiServerService;
         private readonly IManagerConfigService _configService;

@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
+using SIT.Manager.Avalonia.ViewModels;
 
 namespace SIT.Manager.Avalonia.Services
 {
@@ -13,6 +14,8 @@ namespace SIT.Manager.Avalonia.Services
         protected override string EXECUTABLE_NAME => SERVER_EXE;
         public override string ExecutableDirectory => !string.IsNullOrEmpty(_configService.Config.AkiServerPath) ? _configService.Config.AkiServerPath : string.Empty;
         public event EventHandler<DataReceivedEventArgs>? OutputDataReceived;
+        public event EventHandler? ServerStarted;
+        public bool IsStarted { get; private set; } = false;
         public TarkovEdition[] TarkovEditions { get; private set; } = [];
         public bool IsUnhandledInstanceRunning() {
             Process[] akiServerProcesses = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SERVER_EXE));
@@ -50,6 +53,19 @@ namespace SIT.Manager.Avalonia.Services
             };
 
             _process.OutputDataReceived += new DataReceivedEventHandler((sender, e) => OutputDataReceived?.Invoke(sender, e));
+            DataReceivedEventHandler? startedEventHandler = null;
+            startedEventHandler = new DataReceivedEventHandler((sender, e) =>
+            {
+                if (ServerPageViewModel.ConsoleTextRemoveANSIFilterRegex()
+                .Replace(e.Data ?? string.Empty, "")
+                .Equals("Server is running, do not close while playing SPT, Happy playing!!", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    IsStarted = true;
+                    ServerStarted?.Invoke(sender, e);
+                    _process.OutputDataReceived -= startedEventHandler;
+                }
+            });
+            _process.OutputDataReceived += startedEventHandler;
             _process.Exited += new EventHandler((sender, e) => ExitedEvent(sender, e));
 
             _process.Start();

@@ -9,6 +9,8 @@ namespace SIT.Manager.Avalonia.ManagedProcess
     {
         TarkovEdition[] TarkovEditions { get; }
         event EventHandler<DataReceivedEventArgs>? OutputDataReceived;
+        event EventHandler? ServerStarted;
+        public bool IsStarted { get; }
         bool IsUnhandledInstanceRunning();
     }
 }

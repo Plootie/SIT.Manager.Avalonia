@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
@@ -17,6 +18,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.ViewModels
@@ -246,6 +248,57 @@ namespace SIT.Manager.Avalonia.ViewModels
                 {
                     Environment.Exit(0);
                 }
+            }
+        }
+
+        [RelayCommand]
+        private async Task QuickPlay()
+        {
+            //TODO: Find a way to meld this with the server page better, theres a lot of overlap happening here
+            if(_akiServerService.IsUnhandledInstanceRunning())
+            {
+                await new ContentDialog()
+                {
+                    Title = "Unhandled Server Instance",
+                    Content = "SPT-AKI is currently running. Please close any running instance of SPT-AKI.",
+                    CloseButtonText = "Ok",
+                }.ShowAsync();
+            }
+            else if(!File.Exists(_akiServerService.ExecutableFilePath))
+            {
+                await new ContentDialog()
+                {
+                    Title = "Unhandled Server Instance",
+                    Content = "SPT-AKI is currently running. Please close any running instance of SPT-AKI.",
+                    CloseButtonText = "Ok",
+                }.ShowAsync();
+            }
+            else
+            {
+                using CancellationTokenSource cts = new();
+                async void serverStartEventHandler(object? sender, EventArgs e)
+                {
+                    cts.Dispose();
+                    await Dispatcher.UIThread.Invoke(async () =>
+                    {
+                        await ConnectToServer();
+                    });
+                    _akiServerService.ServerStarted -= serverStartEventHandler;
+                }
+
+                _akiServerService.ServerStarted += serverStartEventHandler;
+                _akiServerService.Start();
+
+                cts.CancelAfter(TimeSpan.FromSeconds(30));
+                cts.Token.Register(() =>
+                {
+                    new ContentDialog()
+                    {
+                        Title = "Server Error",
+                        Content = "The server never started. Please check the logs for more information.",
+                        CloseButtonText = "Ok"
+                    }.ShowAsync();
+                });
             }
         }
     }
