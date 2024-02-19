@@ -233,7 +233,7 @@ namespace SIT.Manager.Avalonia.ViewModels
             }
 
             //Connect to server
-            string token = await LoginToServerAsync(serverAddress);
+            string token = await LoginToServerAsync(serverAddress ?? throw new ArgumentNullException(nameof(serverAddress), "Server address is null"));
             if (string.IsNullOrEmpty(token))
                 return;
 
