@@ -105,7 +105,7 @@ namespace SIT.Manager.Avalonia.ViewModels
                     {
                         //TODO: SelectEditionDialog
 
-                        string edition = string.Empty; // selectWindow.edition;
+                        string edition = "Edge Of Darkness";
                         if (!string.IsNullOrEmpty(edition))
                             loginInfo.Edition = edition;
 
