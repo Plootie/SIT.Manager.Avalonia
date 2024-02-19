@@ -39,6 +39,7 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         [ObservableProperty]
         private bool _rememberMe;
+
         private readonly HttpClient _httpClient;
         private readonly HttpClientHandler _httpClientHandler;
         private readonly ITarkovClientService _tarkovClientService;
@@ -175,67 +176,60 @@ namespace SIT.Manager.Avalonia.ViewModels
             _configService.UpdateConfig(config);
             _configService.Save(config.RememberLogin);
 
-            //TODO: Replace these checks with a more flexable solution and remove hardcoded strings
             Uri? serverAddress = GetUriFromAddress(LastServer);
-            if(serverAddress == null)
-            {
-                await new ContentDialog()
+
+            //TODO: Change this to pass the server address as a param and move this outside the connect method
+            List<ValidationRule> validationRules =
+            [
+                //Address
+                new()
                 {
-                    Title = "Invalid server address",
-                    Content = "Please fix your server address and try again",
-                    CloseButtonText = "Ok"
-                }.ShowAsync();
-
-                return;
-            }
-
-            if (string.IsNullOrEmpty(_configService.Config.InstallPath))
-            {
-                await new ContentDialog()
+                    Name = "Server Address",
+                    ErrorMessage = "Please fix your server address and try again",
+                    Check = () => { return serverAddress != null; }
+                },
+                //Install path
+                new()
                 {
-                    Title = "Config Error",
-                    Content = "'Install Path' is not configured. Go to settings and configure the installtion path.",
-                    CloseButtonText = "Ok"
-                }.ShowAsync();
-
-                return;
-            }
-
-            string SITPluginPath = Path.Combine(_configService.Config.InstallPath, "BepInEx", "plugins", SIT_DLL_FILENAME);
-            if(!File.Exists(SITPluginPath)) 
-            {
-                await new ContentDialog()
+                    Name = "Install Path",
+                    ErrorMessage = "'Install Path' is not configured. Go to settings and configure the installtion path.",
+                    Check = () => { return !string.IsNullOrEmpty(_configService.Config.InstallPath); }
+                },
+                //SIT check
+                new()
                 {
-                    Title = "Install Error",
-                    Content = $"Unable to find '{SIT_DLL_FILENAME}'. Install SIT before connecting.",
-                    CloseButtonText = "Ok"
-                }.ShowAsync();
-
-                return;
-            }
-
-            if(!File.Exists(Path.Combine(_configService.Config.InstallPath, EFT_EXE_FILENAME)))
-            {
-                await new ContentDialog()
+                    Name = "SIT Installation",
+                    ErrorMessage = $"Unable to find '{SIT_DLL_FILENAME}'. Install SIT before connecting.",
+                    Check = () =>{ return File.Exists(Path.Combine(_configService.Config.InstallPath, "BepInEx", "plugins", SIT_DLL_FILENAME)); }
+                },
+                //EFT Check
+                new()
                 {
-                    Title = "Install Error",
-                    Content = $"Unable to find '{EFT_EXE_FILENAME}' in the installation path.",
-                    CloseButtonText = "Ok"
-                }.ShowAsync();
-
-                return;
-            }
-            
-            if(LastServer.Length == 0 || Username.Length == 0 || Password.Length == 0)
-            {
-                await new ContentDialog()
+                    Name = "EFT Installation",
+                    ErrorMessage = $"Unable to find '{EFT_EXE_FILENAME}' in the installation path.",
+                    Check = () => { return File.Exists(Path.Combine(_configService.Config.InstallPath, EFT_EXE_FILENAME)); }
+                },
+                //Field Check
+                new()
                 {
-                    Title = "Input Error",
-                    Content = "Missing field.",
-                    CloseButtonText = "Ok"
-                }.ShowAsync();
+                    Name = "Input Validation",
+                    ErrorMessage = "Missing input field.",
+                    Check = () => { return LastServer.Length > 0 && Username.Length > 0 && Password.Length > 0; }
+                }
+            ];
 
-                return;
+            foreach(ValidationRule rule in validationRules)
+            {
+                if (rule?.Check != null && !rule.Check())
+                {
+                    await new ContentDialog()
+                    {
+                        Title = rule.Name,
+                        Content = rule.ErrorMessage,
+                        CloseButtonText = "Ok"
+                    }.ShowAsync();
+                    return;
+                }
             }
 
             //Connect to server
