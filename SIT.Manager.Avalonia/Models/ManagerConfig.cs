@@ -12,6 +12,7 @@ namespace SIT.Manager.Avalonia.Models
         public string AkiServerPath { get; set; } = string.Empty;
         public bool RememberLogin { get; set; } = false;
         public bool CloseAfterLaunch { get; set; } = false;
+        public bool CloseServerOnClose { get; set; } = false;
         public string TarkovVersion { get; set; } = string.Empty;
         public string SitVersion { get; set; } = string.Empty;
         public bool LookForUpdates { get; set; } = true;

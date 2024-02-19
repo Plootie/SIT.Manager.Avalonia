@@ -27,6 +27,9 @@ public partial class SettingsPageViewModel : ViewModelBase
     private bool _lookForUpdates;
 
     [ObservableProperty]
+    private bool _closeServerOnClose;
+
+    [ObservableProperty]
     private string _managerVersionString;
 
     [ObservableProperty]
@@ -67,6 +70,7 @@ public partial class SettingsPageViewModel : ViewModelBase
         _versionService = versionService;
 
         _closeAfterLaunch = _configsService.Config.CloseAfterLaunch;
+        _closeServerOnClose = _configsService.Config.CloseServerOnClose;
         _lookForUpdates = _configsService.Config.LookForUpdates;
         _installPath = _configsService.Config.InstallPath;
         _tarkovVersion = _configsService.Config.TarkovVersion;
@@ -148,6 +152,7 @@ public partial class SettingsPageViewModel : ViewModelBase
         ManagerConfig config = _configsService.Config;
         config.CloseAfterLaunch = CloseAfterLaunch;
         config.LookForUpdates = LookForUpdates;
+        config.CloseServerOnClose = CloseServerOnClose;
         config.InstallPath = InstallPath;
         config.TarkovVersion = TarkovVersion;
         config.SitVersion = SitVersion;

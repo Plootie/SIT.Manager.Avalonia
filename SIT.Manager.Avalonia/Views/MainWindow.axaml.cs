@@ -17,7 +17,12 @@ public partial class MainWindow : Window
 
     private void Window_Closed(object? sender, EventArgs e) {
         IAkiServerService? akiServerService = App.Current.Services.GetService<IAkiServerService>();
-        if (akiServerService != null && akiServerService.State == AkiServerService.RunningState.Running) {
+        IManagerConfigService? managerConfigService = App.Current.Services.GetService<IManagerConfigService>();
+        if (akiServerService != null && akiServerService.State == AkiServerService.RunningState.Running)
+        {
+            //This logic looks a little funky but its just so that if the config services is null we default close it anyway
+            if (managerConfigService != null && (!managerConfigService.Config.CloseServerOnClose || managerConfigService.Config.CloseAfterLaunch))
+                return;
             akiServerService.Stop();
         }
     }

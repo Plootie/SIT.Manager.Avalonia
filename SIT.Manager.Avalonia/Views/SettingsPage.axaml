@@ -28,6 +28,9 @@
 						<CheckBox Content="Close Launcher After Game Launch" 
 								  ToolTip.Tip="Closes the launcher automatically after opening the game."
 								  IsChecked="{Binding CloseAfterLaunch, Mode=TwoWay}"/>
+						<CheckBox Content="Close Aki Server On Launcher Close"
+								  ToolTip.Tip="Automatically shutdown the aki server when closing the launcher. (Note: If you have 'Close Launcher After Game Launch' enabled this is ignored)"
+								  IsChecked="{Binding CloseServerOnClose, Mode=TwoWay}"/>
 						<CheckBox Content="Look For Updates" 
 								  ToolTip.Tip="Automatically look for updates when opening the launcher."
 								  IsChecked="{Binding LookForUpdates, Mode=TwoWay}"/>
