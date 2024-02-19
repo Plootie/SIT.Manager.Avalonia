@@ -17,7 +17,8 @@ namespace SIT.Manager.Avalonia.Classes
         public Uri RemoteEndPoint;
         private readonly HttpClient _httpClient;
         private readonly HttpClientHandler _httpClientHandler;
-        
+        private static readonly MediaTypeHeaderValue _contentHeaderType = new("application/json");
+
         public TarkovRequesting(Uri remoteEndPont, HttpClient httpClient, HttpClientHandler httpClientHandler)
         { 
             RemoteEndPoint = remoteEndPont;
@@ -27,14 +28,12 @@ namespace SIT.Manager.Avalonia.Classes
 
         private async Task<Stream> Send(string url, HttpMethod? method = null, string? data = null, TarkovRequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
-            //TODO: Clean this, kinda icky
             method ??= HttpMethod.Get;
             requestOptions ??= new TarkovRequestOptions();
-            //TODO: Look at making these default headers. Not sure if the added overhead of setting up each request is justifiable with keeping a single instance
+
             UriBuilder serverUriBuilder = new(requestOptions.SchemeOverride ?? RemoteEndPoint.Scheme, RemoteEndPoint.Host, RemoteEndPoint.Port, url);
             HttpRequestMessage request = new(method, serverUriBuilder.Uri);
             request.Headers.ExpectContinue = true;
-
 
             //Typically deflate, gzip
             foreach(string encoding in requestOptions.AcceptEncoding)
@@ -46,7 +45,7 @@ namespace SIT.Manager.Avalonia.Classes
             {
                 byte[] contentBytes = SimpleZlib.CompressToBytes(data, requestOptions.CompressionProfile);
                 request.Content = new ByteArrayContent(contentBytes);
-                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                request.Content.Headers.ContentType = _contentHeaderType;
                 request.Content.Headers.ContentEncoding.Add("deflate");
                 request.Content.Headers.Add("Content-Length", contentBytes.Length.ToString());
             }
@@ -54,13 +53,13 @@ namespace SIT.Manager.Avalonia.Classes
             try
             {
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                cts.CancelAfter((int)Math.Round(requestOptions.Timeout.TotalMilliseconds));
+                cts.CancelAfter(requestOptions.Timeout);
                 HttpResponseMessage response = await _httpClient.SendAsync(request, cts.Token);
-                cts.TryReset(); //This is mostly to shut the compiler up about passing the token, idk
-                return await response.Content.ReadAsStreamAsync();
+                return await response.Content.ReadAsStreamAsync(cancellationToken);
             }
             catch(HttpRequestException ex)
             {
+                //TODO: Loggy logging
                 if (requestOptions.TryAgain)
                 {
                     TarkovRequestOptions options = new()
