@@ -14,19 +14,12 @@ using System.Text.Json;
 
 namespace SIT.Manager.Avalonia.Classes
 {
-    public class TarkovRequesting
+    public class TarkovRequesting(Uri remoteEndPont, HttpClient httpClient, HttpClientHandler httpClientHandler)
     {
-        public Uri RemoteEndPoint;
-        private readonly HttpClient _httpClient;
-        private readonly HttpClientHandler _httpClientHandler;
+        public Uri RemoteEndPoint = remoteEndPont;
+        private readonly HttpClient _httpClient = httpClient;
+        private readonly HttpClientHandler _httpClientHandler = httpClientHandler;
         private static readonly MediaTypeHeaderValue _contentHeaderType = new("application/json");
-
-        public TarkovRequesting(Uri remoteEndPont, HttpClient httpClient, HttpClientHandler httpClientHandler)
-        { 
-            RemoteEndPoint = remoteEndPont;
-            _httpClient = httpClient;
-            _httpClientHandler = httpClientHandler;
-        }
 
         private async Task<Stream> Send(string url, HttpMethod? method = null, string? data = null, TarkovRequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
@@ -95,11 +88,12 @@ namespace SIT.Manager.Avalonia.Classes
         public async Task<string> LoginAsync(TarkovLoginInfo loginInfo)
         {
             string SessionID = await PostJson("/launcher/profile/login", JsonSerializer.Serialize(loginInfo));
-            if (SessionID.Equals("invalid_password", StringComparison.InvariantCultureIgnoreCase))
-                throw new IncorrectServerPasswordException();
-            else if (SessionID.Equals("failed", StringComparison.InvariantCultureIgnoreCase))
-                throw new AccountNotFoundException();
-            return SessionID;
+            return SessionID.ToLowerInvariant() switch
+            {
+                "invalid_password" => throw new IncorrectServerPasswordException(),
+                "failed" => throw new AccountNotFoundException(),
+                _ => SessionID,
+            };
         }
 
         public async Task<bool> RegisterAccountAsync(TarkovLoginInfo loginInfo)
