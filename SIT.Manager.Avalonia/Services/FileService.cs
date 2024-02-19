@@ -154,6 +154,7 @@ namespace SIT.Manager.Avalonia.Services
                 // File doesn't exist so return early.
                 return;
             }
+            path = Path.GetFullPath(path);
             await FileOpener.OpenAtLocation(path);
         }
     }

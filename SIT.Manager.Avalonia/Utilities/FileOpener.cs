@@ -31,8 +31,8 @@ namespace SIT.Manager.Avalonia.Utilities
 
             using (Process opener = new()) {
                 if (OperatingSystem.IsWindows()) {
-                    opener.StartInfo.FileName = "explorer";
-                    opener.StartInfo.Arguments = $"/select,{path}\"";
+                    opener.StartInfo.FileName = "explorer.exe";
+                    opener.StartInfo.Arguments = path;
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
                     opener.StartInfo.FileName = "explorer";
@@ -45,7 +45,6 @@ namespace SIT.Manager.Avalonia.Utilities
                 opener.Start();
                 await opener.WaitForExitAsync();
             }
-
         }
     }
 }

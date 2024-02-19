@@ -39,12 +39,12 @@ namespace SIT.Manager.Avalonia.Services
         }
 
         public async Task OpenDirectoryAsync(string path) {
-            string dirPath = Path.GetDirectoryName(path) ?? string.Empty;
-            if (!Directory.Exists(dirPath)) {
+            if (!Directory.Exists(path)) {
                 // Directory doesn't exist so return early.
                 return;
             }
-            await FileOpener.OpenAtLocation(dirPath);
+            path = Path.GetFullPath(path);
+            await FileOpener.OpenAtLocation(path);
         }
     }
 }
