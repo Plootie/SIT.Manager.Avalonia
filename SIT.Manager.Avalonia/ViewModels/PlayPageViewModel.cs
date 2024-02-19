@@ -46,6 +46,10 @@ namespace SIT.Manager.Avalonia.ViewModels
         private readonly HttpClientHandler _httpClientHandler;
         private readonly ITarkovClientService _tarkovClientService;
         private readonly IAkiServerService _akiServerService;
+
+        public IAsyncRelayCommand ConnectToServerCommand { get; }
+        public IAsyncRelayCommand QuickPlayCommand { get; }
+
         public PlayPageViewModel(
             IManagerConfigService configService,
             HttpClient httpClient,
@@ -64,6 +68,9 @@ namespace SIT.Manager.Avalonia.ViewModels
             _username = _configService.Config.Username;
             _password = _configService.Config.Password;
             _rememberMe = _configService.Config.RememberLogin;
+
+            ConnectToServerCommand = new AsyncRelayCommand(ConnectToServer);
+            QuickPlayCommand = new AsyncRelayCommand(QuickPlay);
         }
 
 
@@ -156,7 +163,6 @@ namespace SIT.Manager.Avalonia.ViewModels
             }
         }
 
-        [RelayCommand]
         private async Task ConnectToServer()
         {
             ManagerConfig config = _configService.Config;
@@ -251,7 +257,6 @@ namespace SIT.Manager.Avalonia.ViewModels
             }
         }
 
-        [RelayCommand]
         private async Task QuickPlay()
         {
             //TODO: Find a way to meld this with the server page better, theres a lot of overlap happening here
