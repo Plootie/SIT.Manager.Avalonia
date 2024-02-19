@@ -106,10 +106,7 @@ namespace SIT.Manager.Avalonia.ViewModels
                 {
                     //TODO: SelectEditionDialog
                     SelectEditionDialog selectEditionDialog = new SelectEditionDialog(editions);
-                    await selectEditionDialog.ShowAsync();
-                    string edition = "Edge Of Darkness";
-                    if (!string.IsNullOrEmpty(edition))
-                        loginInfo.Edition = edition;
+                    loginInfo.Edition = (await selectEditionDialog.ShowAsync()).Edition;
 
                     //Register new account
                     await requesting.RegisterAccountAsync(loginInfo);
