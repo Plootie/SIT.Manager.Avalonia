@@ -105,11 +105,12 @@ namespace SIT.Manager.Avalonia.ViewModels
                 if (createAccountResponse == ContentDialogResult.Primary)
                 {
                     //TODO: SelectEditionDialog
+                    SelectEditionDialog selectEditionDialog = new SelectEditionDialog(editions);
+                    await selectEditionDialog.ShowAsync();
                     string edition = "Edge Of Darkness";
                     if (!string.IsNullOrEmpty(edition))
                         loginInfo.Edition = edition;
 
-                    string serializedLoginData = JsonSerializer.Serialize(loginInfo);
                     //Register new account
                     await requesting.RegisterAccountAsync(loginInfo);
 

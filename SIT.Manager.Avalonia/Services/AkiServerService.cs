@@ -2,8 +2,8 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using SIT.Manager.Avalonia.Classes;
 using SIT.Manager.Avalonia.ManagedProcess;
+using SIT.Manager.Avalonia.Models;
 
 namespace SIT.Manager.Avalonia.Services
 {

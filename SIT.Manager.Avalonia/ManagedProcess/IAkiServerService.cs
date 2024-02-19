@@ -1,4 +1,4 @@
-﻿using SIT.Manager.Avalonia.Classes;
+﻿using SIT.Manager.Avalonia.Models;
 using System;
 using System.Diagnostics;
 using static SIT.Manager.Avalonia.Services.AkiServerService;
