@@ -2,6 +2,7 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using SIT.Manager.Avalonia.Classes;
 using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Services;
@@ -55,6 +56,7 @@ public sealed partial class App : Application
             ServerCertificateCustomValidationCallback = delegate { return true; }
         });
         services.AddSingleton(provider => new HttpClient(provider.GetService<HttpClientHandler>() ?? throw new ArgumentNullException()));
+        services.AddSingleton<IZlibCompressionService, ZlibCompressionService>();
 
         // Viewmodels
         services.AddTransient<MainViewModel>();

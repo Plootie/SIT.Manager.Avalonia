@@ -11,16 +11,19 @@ using System.Threading;
 using System.Diagnostics;
 using SIT.Manager.Avalonia.Classes.Exceptions;
 using System.Text.Json;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using SIT.Manager.Avalonia.Interfaces;
 
 namespace SIT.Manager.Avalonia.Classes
 {
-    public class TarkovRequesting(Uri remoteEndPont, HttpClient httpClient, HttpClientHandler httpClientHandler)
+    public partial class TarkovRequesting(Uri remoteEndPont, HttpClient httpClient, HttpClientHandler httpClientHandler, IZlibCompressionService compressionService)
     {
         public Uri RemoteEndPoint = remoteEndPont;
         private readonly HttpClient _httpClient = httpClient;
         private readonly HttpClientHandler _httpClientHandler = httpClientHandler;
         private static readonly MediaTypeHeaderValue _contentHeaderType = new("application/json");
-
+        private IZlibCompressionService _compressionService = compressionService;
         private async Task<Stream> Send(string url, HttpMethod? method = null, string? data = null, TarkovRequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             method ??= HttpMethod.Get;
@@ -38,7 +41,7 @@ namespace SIT.Manager.Avalonia.Classes
 
             if(method != HttpMethod.Get && !string.IsNullOrEmpty(data))
             {
-                byte[] contentBytes = SimpleZlib.CompressToBytes(data, requestOptions.CompressionProfile);
+                byte[] contentBytes = _compressionService.CompressToBytes(data, requestOptions.CompressionProfile, Encoding.UTF8);
                 request.Content = new ByteArrayContent(contentBytes);
                 request.Content.Headers.ContentType = _contentHeaderType;
                 request.Content.Headers.ContentEncoding.Add("deflate");
@@ -60,7 +63,7 @@ namespace SIT.Manager.Avalonia.Classes
                     TarkovRequestOptions options = new()
                     {
                         Timeout = TimeSpan.FromSeconds(5),
-                        CompressionProfile = zlibConst.Z_BEST_COMPRESSION,
+                        CompressionProfile = ZlibCompression.BestCompression,
                         SchemeOverride = "http://",
                         AcceptEncoding = ["deflate"],
                         TryAgain = false
@@ -111,7 +114,7 @@ namespace SIT.Manager.Avalonia.Classes
 
     public class TarkovRequestOptions()
     {
-        public int CompressionProfile { get; init; } = zlibConst.Z_BEST_SPEED;
+        public ZlibCompression CompressionProfile { get; init; } = ZlibCompression.BestSpeed;
         public string? SchemeOverride { get; init; }
         public string[] AcceptEncoding { get; init; } = ["deflate", "gzip"];
         public TimeSpan Timeout { get; init; } = TimeSpan.FromMinutes(1);
