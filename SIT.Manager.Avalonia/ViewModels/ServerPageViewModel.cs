@@ -58,6 +58,7 @@ namespace SIT.Manager.Avalonia.ViewModels
             FontFamily newFont = FontManager.Current.SystemFonts.FirstOrDefault(x => x.Name == newConfig.ConsoleFontFamily, FontFamily.Parse("Bender"));
             if(!newFont.Name.Equals(cachedFontFamily.Name))
             {
+                cachedFontFamily = newFont;
                 foreach (ConsoleText textEntry in ConsoleOutput)
                 {
                     textEntry.TextFont = cachedFontFamily;
