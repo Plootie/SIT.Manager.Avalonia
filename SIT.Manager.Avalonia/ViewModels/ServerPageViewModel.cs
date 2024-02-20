@@ -3,8 +3,8 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
+using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
-using SIT.Manager.Avalonia.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -23,7 +23,7 @@ namespace SIT.Manager.Avalonia.ViewModels
         private const int CONSOLE_LINE_LIMIT = 10_000;
 
         [GeneratedRegex("\\x1B(?:[@-Z\\\\-_]|\\[[0-?]*[ -/]*[@-~])")]
-        private static partial Regex ConsoleTextRemoveANSIFilterRegex();
+        internal static partial Regex ConsoleTextRemoveANSIFilterRegex();
 
         private readonly IAkiServerService _akiServerService;
         private readonly IManagerConfigService _configService;
@@ -42,6 +42,9 @@ namespace SIT.Manager.Avalonia.ViewModels
 
             _akiServerService.OutputDataReceived += AkiServer_OutputDataReceived;
             _akiServerService.RunningStateChanged += AkiServer_RunningStateChanged;
+
+            if(_akiServerService.State != RunningState.NotRunning)
+                AkiServer_RunningStateChanged(null, _akiServerService.State);
         }
 
         private void AddConsole(string text) {
@@ -106,7 +109,7 @@ namespace SIT.Manager.Avalonia.ViewModels
                     return;
                 }
 
-                if (!File.Exists(_akiServerService.ServerFilePath)) {
+                if (!File.Exists(_akiServerService.ExecutableFilePath)) {
                     AddConsole("SPT-AKI not found. Please configure the SPT-AKI path in Settings tab before starting the server.");
                     return;
                 }

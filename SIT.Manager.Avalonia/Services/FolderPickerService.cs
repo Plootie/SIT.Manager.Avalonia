@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using SIT.Manager.Avalonia.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

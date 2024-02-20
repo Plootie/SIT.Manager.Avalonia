@@ -11,6 +11,8 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Text.Json;
 using System.Threading.Tasks;
+using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.ManagedProcess;
 
 namespace SIT.Manager.Avalonia.ViewModels
 {
