@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.Models;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -21,10 +22,64 @@ namespace SIT.Manager.Avalonia.ViewModels
         private Wave? _selectedWave;
 
         [ObservableProperty]
+        private BossLocationSpawn? _selectedBossLocationSpawn;
+
+        [ObservableProperty]
         private int _selectedWaveIndex = 0;
 
         [ObservableProperty]
         private string _loadedLocation = string.Empty;
+
+        public List<string> BotDifficulty => [
+            "easy",
+            "normal",
+            "hard"
+        ];
+
+        public List<string> BotSide => [
+            "Savage",
+            "Bear",
+            "Usec"
+        ];
+
+        public List<string> WildSpawnType => [
+            "assault",
+            "marksman"
+        ];
+
+        public List<string> BossEscortType => [
+            "followerBully",
+            "followerTagilla",
+            "followerZryachiy",
+            "followerGluharAssault",
+            "followerSanitar",
+            "followerKojaniy",
+            "followerBoar",
+            "bossBoarSniper",
+            "crazyAssaultEvent",
+            "pmcBot",
+            "exUsec",
+            "sectantWarrior",
+            "arenaFighterEvent"
+        ];
+
+        public List<string> BossName => [
+            "bossKnight",
+            "bossBully",
+            "bossTagilla",
+            "bossKilla",
+            "bossZryachiy",
+            "bossGluhar",
+            "bossSanitar",
+            "bossKojaniy",
+            "bossBoar",
+            "bossBoarSniper",
+            "sectantPriest",
+            "arenaFighterEvent",
+            "pmcBot",
+            "exUsec",
+            "crazyAssaultEvent"
+        ];
 
         public IAsyncRelayCommand LoadCommand { get; }
         public IAsyncRelayCommand SaveCommand { get; }
@@ -101,7 +156,7 @@ namespace SIT.Manager.Avalonia.ViewModels
                 }
 
                 if (location.BossLocationSpawn.Count > 0) {
-                    // TODO BossList.SelectedIndex = 0;
+                    SelectedBossLocationSpawn = location.BossLocationSpawn[0];
                 }
 
                 _barNotificationService.ShowSuccess("Load Location", $"Loaded location {LoadedLocation} successfully.");
