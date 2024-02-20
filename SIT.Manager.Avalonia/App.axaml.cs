@@ -14,7 +14,7 @@ public sealed partial class App : Application
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use
     /// </summary>
-    public new static App Current => (App) Application.Current;
+    public new static App Current => Application.Current as App ?? throw new ArgumentNullException(nameof(Application.Current));
 
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> instance to resolve application services.
