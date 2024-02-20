@@ -11,11 +11,12 @@ using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.Classes
 {
-    public class ZlibCompressionService : IZlibCompressionService
+    public class ZlibService : IZlibService
     {
         private Assembly? _zlibAssembly;
         private MethodInfo? compressToBytesMethodInfo;
-        public ZlibCompressionService(IManagerConfigService configService)
+        private MethodInfo? decompressMethodInfo;
+        public ZlibService(IManagerConfigService configService)
         {
             if (string.IsNullOrEmpty(configService.Config.InstallPath))
                 configService.ConfigChanged += LoadZlibFromConfig;
@@ -29,6 +30,11 @@ namespace SIT.Manager.Avalonia.Classes
             return (byte[]?)compressToBytesMethodInfo?.Invoke(null, new object[] { data, compressionProfile, encoding ?? Encoding.UTF8 }) ?? [];
         }
 
+        public string Decompress(byte[] data, Encoding? encoding = null)
+        {
+            return (string?)decompressMethodInfo?.Invoke(null, new object[] {data, encoding ?? Encoding.UTF8 }) ?? string.Empty;
+        }
+
         private void LoadZlibFromConfig(object? sender, ManagerConfig e)
         {
             if (!string.IsNullOrEmpty(e.InstallPath))
@@ -37,8 +43,9 @@ namespace SIT.Manager.Avalonia.Classes
                 _zlibAssembly = Assembly.LoadFrom(assemblyPath);
                 Type? SimpleZlib = _zlibAssembly?.GetType("ComponentAce.Compression.Libs.zlib.SimpleZlib");
                 compressToBytesMethodInfo = SimpleZlib?.GetMethod("CompressToBytes", [typeof(string), typeof(int), typeof(Encoding)]);
+                decompressMethodInfo = SimpleZlib?.GetMethod("Decompress", [typeof(byte[]), typeof(Encoding)]);
 
-                if (sender is IManagerConfigService configService && compressToBytesMethodInfo != null)
+                if (sender is IManagerConfigService configService && compressToBytesMethodInfo != null && decompressMethodInfo != null)
                     configService.ConfigChanged -= LoadZlibFromConfig;
             }
         }

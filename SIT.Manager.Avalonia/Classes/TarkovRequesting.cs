@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http.Headers;
-using ComponentAce.Compression.Libs.zlib;
 using System.Threading;
 using System.Diagnostics;
 using SIT.Manager.Avalonia.Classes.Exceptions;
@@ -17,13 +16,13 @@ using SIT.Manager.Avalonia.Interfaces;
 
 namespace SIT.Manager.Avalonia.Classes
 {
-    public partial class TarkovRequesting(Uri remoteEndPont, HttpClient httpClient, HttpClientHandler httpClientHandler, IZlibCompressionService compressionService)
+    public partial class TarkovRequesting(Uri remoteEndPont, HttpClient httpClient, HttpClientHandler httpClientHandler, IZlibService compressionService)
     {
         public Uri RemoteEndPoint = remoteEndPont;
         private readonly HttpClient _httpClient = httpClient;
         private readonly HttpClientHandler _httpClientHandler = httpClientHandler;
         private static readonly MediaTypeHeaderValue _contentHeaderType = new("application/json");
-        private IZlibCompressionService _compressionService = compressionService;
+        private IZlibService _compressionService = compressionService;
         private async Task<Stream> Send(string url, HttpMethod? method = null, string? data = null, TarkovRequestOptions? requestOptions = null, CancellationToken cancellationToken = default)
         {
             method ??= HttpMethod.Get;
@@ -85,7 +84,7 @@ namespace SIT.Manager.Avalonia.Classes
                 return string.Empty;
             using MemoryStream ms = new();
             await postStream.CopyToAsync(ms);
-            return SimpleZlib.Decompress(ms.ToArray());
+            return _compressionService.Decompress(ms.ToArray());
         }
 
         public async Task<string> LoginAsync(TarkovLoginInfo loginInfo)

@@ -25,16 +25,4 @@
     <PackageReference Include="SkiaSharp" Version="2.88.7" />
     <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="11.0.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="bsg.componentace.compression.libs.zlib">
-      <HintPath>Resources\bsg.componentace.compression.libs.zlib.dll</HintPath>
-    </Reference>
-    <Reference Include="bsg.microsoft.extensions.objectpool">
-      <HintPath>Resources\bsg.microsoft.extensions.objectpool.dll</HintPath>
-    </Reference>
-    <Reference Include="bsg.system.buffers">
-      <HintPath>Resources\bsg.system.buffers.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 </Project>

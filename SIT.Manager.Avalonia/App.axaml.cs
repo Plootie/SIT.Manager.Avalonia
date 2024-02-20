@@ -56,7 +56,7 @@ public sealed partial class App : Application
             ServerCertificateCustomValidationCallback = delegate { return true; }
         });
         services.AddSingleton(provider => new HttpClient(provider.GetService<HttpClientHandler>() ?? throw new ArgumentNullException()));
-        services.AddSingleton<IZlibCompressionService, ZlibCompressionService>();
+        services.AddSingleton<IZlibService, ZlibService>();
 
         // Viewmodels
         services.AddTransient<MainViewModel>();
