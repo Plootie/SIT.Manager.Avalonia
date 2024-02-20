@@ -50,11 +50,6 @@ namespace SIT.Manager.Avalonia.ViewModels
             
             UpdateCachedServerProperties(null, _configService.Config);
             _configService.ConfigChanged += UpdateCachedServerProperties;
-
-            for(int i = 0; i < CONSOLE_LINE_LIMIT; i++)
-            {
-                AddConsole("Testing Testing 123");
-            }
         }
 
         private void UpdateCachedServerProperties(object? sender, ManagerConfig newConfig)
