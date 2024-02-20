@@ -9,7 +9,7 @@ namespace SIT.Manager.Avalonia.Views
     {
         public ModsPage() {
             this.DataContext = App.Current.Services.GetService<ModsPageViewModel>();
-            // AppPermissionsViewModel's WhenActivated block will also get called.
+            // ModsPageViewModel's WhenActivated block will also get called.
             this.WhenActivated(disposables => { /* Handle view activation etc. */ });
             InitializeComponent();
         }
