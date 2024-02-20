@@ -43,6 +43,7 @@
 					 Watermark="Click 'Load'"
 					 UseFloatingWatermark="True"
 					 Width="200"
+					 Text="{Binding LoadedLocation}"
 					 HorizontalAlignment="Left"/>
 		</StackPanel>
 

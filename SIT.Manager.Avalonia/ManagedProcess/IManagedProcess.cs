@@ -1,6 +1,4 @@
-﻿using SIT.Manager.Avalonia.Models;
-using System;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace SIT.Manager.Avalonia.ManagedProcess
 {
@@ -14,11 +12,6 @@ namespace SIT.Manager.Avalonia.ManagedProcess
         /// Clear the cache for the process.
         /// </summary>
         void ClearCache();
-        /// <summary>
-        /// Installs the selected release for this managed process.
-        /// </summary>
-        /// <param name="selectedVersion">The <see cref="GithubRelease"/> to install</param>
-        Task Install(GithubRelease selectedVersion);
         void Stop();
         void Start(string? arguments = null);
     }

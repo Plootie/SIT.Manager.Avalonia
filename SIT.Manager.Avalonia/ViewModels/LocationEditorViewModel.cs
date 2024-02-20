@@ -1,127 +1,110 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.Models;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.ViewModels
 {
     public partial class LocationEditorViewModel : ViewModelBase
     {
+        private readonly IBarNotificationService _barNotificationService;
         private readonly IPickerDialogService _pickerDialogService;
+
+        [ObservableProperty]
+        private BaseLocation? _location;
+
+        [ObservableProperty]
+        private string _loadedLocation = string.Empty;
 
         public IAsyncRelayCommand LoadCommand { get; }
         public IAsyncRelayCommand SaveCommand { get; }
 
-        public LocationEditorViewModel(IPickerDialogService pickerDialogService) {
+        public LocationEditorViewModel(IBarNotificationService barNotificationService, IPickerDialogService pickerDialogService) {
+            _barNotificationService = barNotificationService;
             _pickerDialogService = pickerDialogService;
 
             LoadCommand = new AsyncRelayCommand(Load);
         }
 
         private async Task Load() {
-            await _pickerDialogService.GetFileFromPickerAsync();
-            /* TODO
-            FileOpenPicker filePicker = new() 
-            {
-                FileTypeFilter = { ".json" }
-            };
-
-            IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.m_window);
-            WinRT.Interop.InitializeWithWindow.Initialize(filePicker, hwnd);
-
-            StorageFile file = await filePicker.PickSingleFileAsync();
-
-            if (file == null)
+            IStorageFile? file = await _pickerDialogService.GetFileFromPickerAsync(new List<FilePickerFileType>() { FilePickerFileTypes.All });
+            if (file == null) {
                 return;
+            }
 
-            if (File.Exists(file.Path))
-            {
-                BaseLocation location = JsonSerializer.Deserialize<BaseLocation>(File.ReadAllText(file.Path));
-
-                if (location == null)
-                {
-                    Utils.ShowInfoBar("Load Error", "There was an error saving the file.", InfoBarSeverity.Error);
+            if (File.Exists(file.Path.LocalPath)) {
+                BaseLocation? location = JsonSerializer.Deserialize<BaseLocation>(await File.ReadAllTextAsync(file.Path.LocalPath));
+                if (location == null) {
+                    _barNotificationService.ShowError("Load Error", "There was an error saving the file.");
                     return;
                 }
 
-                for (int i = 0; i < location.waves.Count; i++)
-                {
+                for (int i = 0; i < location.waves.Count; i++) {
                     location.waves[i].Name = i + 1;
                 }
 
-                for (int i = 0; i < location.BossLocationSpawn.Count; i++)
-                {
+                for (int i = 0; i < location.BossLocationSpawn.Count; i++) {
                     location.BossLocationSpawn[i].Name = i + 1;
                 }
 
-                switch (location.Scene.path)
-                {
+                switch (location.Scene.path) {
                     case "maps/factory_day_preset.bundle":
-                        LocationTextBox.Text = "Factory (Day)";
+                        LoadedLocation = "Factory (Day)";
                         break;
                     case "maps/factory_night_preset.bundle":
-                        LocationTextBox.Text = "Factory (Night)";
+                        LoadedLocation = "Factory (Night)";
                         break;
                     case "maps/woods_preset.bundle":
-                        LocationTextBox.Text = "Woods";
+                        LoadedLocation = "Woods";
                         break;
                     case "maps/customs_preset.bundle":
-                        LocationTextBox.Text = "Customs";
+                        LoadedLocation = "Customs";
                         break;
                     case "maps/shopping_mall.bundle":
-                        LocationTextBox.Text = "Interchange";
+                        LoadedLocation = "Interchange";
                         break;
                     case "maps/rezerv_base_preset.bundle":
-                        LocationTextBox.Text = "Reserve";
+                        LoadedLocation = "Reserve";
                         break;
                     case "maps/shoreline_preset.bundle":
-                        LocationTextBox.Text = "Shoreline";
+                        LoadedLocation = "Shoreline";
                         break;
                     case "maps/laboratory_preset.bundle":
-                        LocationTextBox.Text = "Labs";
+                        LoadedLocation = "Labs";
                         break;
                     case "maps/lighthouse_preset.bundle":
-                        LocationTextBox.Text = "Lighthouse";
+                        LoadedLocation = "Lighthouse";
                         break;
                     case "maps/city_preset.bundle":
-                        LocationTextBox.Text = "Streets";
+                        LoadedLocation = "Streets";
                         break;
                     default:
                         break;
                 }
 
-                DataContext = location;
+                Location = location;
 
-                if (location.waves.Count > 0)
-                {
-                    WaveList.SelectedIndex = 0;
+                if (location.waves.Count > 0) {
+                    // TODO WaveList.SelectedIndex = 0;
                 }
 
-                if (location.BossLocationSpawn.Count > 0)
-                {
-                    BossList.SelectedIndex = 0;
+                if (location.BossLocationSpawn.Count > 0) {
+                    // TODO BossList.SelectedIndex = 0;
                 }
 
-                Utils.ShowInfoBar("Load Location", $"Loaded location {LocationTextBox.Text} successfully.", InfoBarSeverity.Success);
+                _barNotificationService.ShowSuccess("Load Location", $"Loaded location {LoadedLocation} successfully.");
             }
-             */
         }
     }
-
-
 
     /* TODO
     public sealed partial class LocationEditor : Page
     {
-        public LocationEditor()
-        {
-            this.InitializeComponent();
-        }
-
-        private void NewButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             FileSavePicker filePicker = new()

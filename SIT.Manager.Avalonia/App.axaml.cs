@@ -40,6 +40,7 @@ public sealed partial class App : Application
         services.AddSingleton<ITarkovClientService, TarkovClientService>();
         services.AddSingleton<IBarNotificationService, BarNotificationService>();
         services.AddTransient<IFileService, FileService>();
+        services.AddTransient<IInstallerService, InstallerService>();
         services.AddSingleton<IManagerConfigService, ManagerConfigService>();
         services.AddTransient<IModService, ModService>();
         services.AddTransient<IPickerDialogService>(x => {

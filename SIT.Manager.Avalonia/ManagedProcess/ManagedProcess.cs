@@ -1,9 +1,7 @@
 ﻿using SIT.Manager.Avalonia.Interfaces;
-using SIT.Manager.Avalonia.Models;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.ManagedProcess
 {
@@ -34,8 +32,6 @@ namespace SIT.Manager.Avalonia.ManagedProcess
         }
 
         public abstract void ClearCache();
-
-        public abstract Task Install(GithubRelease selectedVersion);
 
         public abstract void Start(string? arguments);
 

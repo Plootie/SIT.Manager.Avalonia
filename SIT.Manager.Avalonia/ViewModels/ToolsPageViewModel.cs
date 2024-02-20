@@ -20,6 +20,7 @@ namespace SIT.Manager.Avalonia.ViewModels
         private readonly IBarNotificationService _barNotificationService;
         private readonly IManagerConfigService _configService;
         private readonly IFileService _fileService;
+        private readonly IInstallerService _installerService;
         private readonly ITarkovClientService _tarkovClientService;
 
         public IAsyncRelayCommand InstallSITCommand { get; }
@@ -40,11 +41,13 @@ namespace SIT.Manager.Avalonia.ViewModels
                                   IBarNotificationService barNotificationService,
                                   IManagerConfigService configService,
                                   IFileService fileService,
+                                  IInstallerService installerService,
                                   ITarkovClientService tarkovClientService) {
             _akiServerService = akiServerService;
             _barNotificationService = barNotificationService;
             _configService = configService;
             _fileService = fileService;
+            _installerService = installerService;
             _tarkovClientService = tarkovClientService;
 
             InstallSITCommand = new AsyncRelayCommand(InstallSIT);
@@ -146,7 +149,7 @@ namespace SIT.Manager.Avalonia.ViewModels
             if (result == ContentDialogResult.Primary) {
                 GithubRelease? selectedVersion = selectWindow.GetSelectedGithubRelease();
                 if (selectedVersion != null) {
-                    await _akiServerService.Install(selectedVersion);
+                    await _installerService.InstallServer(selectedVersion);
                 }
             }
         }
