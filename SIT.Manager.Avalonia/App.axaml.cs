@@ -2,10 +2,13 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Services;
 using SIT.Manager.Avalonia.ViewModels;
 using SIT.Manager.Avalonia.Views;
 using System;
+using System.Net.Http;
 
 namespace SIT.Manager.Avalonia;
 
@@ -34,6 +37,7 @@ public sealed partial class App : Application
         // Services
         services.AddSingleton<IActionNotificationService, ActionNotificationService>();
         services.AddSingleton<IAkiServerService, AkiServerService>();
+        services.AddSingleton<ITarkovClientService, TarkovClientService>();
         services.AddSingleton<IBarNotificationService, BarNotificationService>();
         services.AddTransient<IFileService, FileService>();
         services.AddTransient<IDirectoryService>(x => {
@@ -46,10 +50,17 @@ public sealed partial class App : Application
         services.AddTransient<IModService, ModService>();
         services.AddSingleton<ITarkovClientService, TarkovClientService>();
         services.AddSingleton<IVersionService, VersionService>();
+        services.AddSingleton(new HttpClientHandler
+        {
+            SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
+            ServerCertificateCustomValidationCallback = delegate { return true; }
+        });
+        services.AddSingleton(provider => new HttpClient(provider.GetService<HttpClientHandler>() ?? throw new ArgumentNullException()));
 
         // Viewmodels
         services.AddTransient<MainViewModel>();
         services.AddTransient<ModsPageViewModel>();
+        services.AddTransient<PlayPageViewModel>();
         services.AddTransient<SettingsPageViewModel>();
         services.AddTransient<ServerPageViewModel>();
         services.AddTransient<ToolsPageViewModel>();

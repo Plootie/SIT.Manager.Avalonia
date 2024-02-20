@@ -1,10 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Media.Animation;
+using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.Models;
 using SIT.Manager.Avalonia.Models.Messages;
-using SIT.Manager.Avalonia.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
