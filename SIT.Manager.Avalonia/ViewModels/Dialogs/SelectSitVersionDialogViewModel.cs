@@ -12,8 +12,12 @@ using System.Text.RegularExpressions;
 
 namespace SIT.Manager.Avalonia.ViewModels.Dialogs
 {
-    public partial class SelectServerVersionDialogViewModel : ViewModelBase
+    public partial class SelectSitVersionDialogViewModel : ViewModelBase
     {
+        [GeneratedRegex("This version works with version [0]{1,}\\.[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,5}")]
+        private static partial Regex ClientVersionRegex();
+
+
         [ObservableProperty]
         private GithubRelease? _selectedRelease;
 
@@ -25,7 +29,7 @@ namespace SIT.Manager.Avalonia.ViewModels.Dialogs
         /// </summary>
         public ObservableCollection<GithubRelease> GithubReleases { get; } = [];
 
-        public SelectServerVersionDialogViewModel() {
+        public SelectSitVersionDialogViewModel() {
             RxApp.TaskpoolScheduler.Schedule(FetchReleases);
         }
 
@@ -41,34 +45,32 @@ namespace SIT.Manager.Avalonia.ViewModels.Dialogs
                             { "User-Agent", "request" }
                         }
                 }) {
-                    string releasesJsonString = await httpClient.GetStringAsync(@"https://api.github.com/repos/stayintarkov/SIT.Aki-Server-Mod/releases");
+                    string releasesJsonString = await httpClient.GetStringAsync(@"https://api.github.com/repos/stayintarkov/StayInTarkov.Client/releases");
                     githubReleases = JsonSerializer.Deserialize<List<GithubRelease>>(releasesJsonString) ?? [];
                 }
             }
             catch (Exception ex) {
                 GithubReleases.Clear();
-                // TODO Loggy.LogToFile("Install Server: " + ex.Message);
+                // TODO Loggy.LogToFile("InstallSIT: " + ex.Message);
             }
 
             if (githubReleases.Count > 0) {
                 foreach (GithubRelease release in githubReleases) {
-                    var zipAsset = release.assets.Find(asset => asset.name.EndsWith(".zip"));
-                    if (zipAsset != null) {
-                        Match match = ServerVersionRegex().Match(release.body);
-                        if (match.Success) {
-                            string releasePatch = match.Groups[1].Value;
-                            release.tag_name = release.name + " - Tarkov Version: " + releasePatch;
-                            release.body = releasePatch;
-                            GithubReleases.Add(release);
-                        }
-                        else {
-                            // TODO Loggy.LogToFile("FetchReleases: There was a release without a version defined: " + release.html_url);
-                        }
+                    Match match = ClientVersionRegex().Match(release.body);
+                    if (match.Success) {
+                        string releasePatch = match.Value.Replace("This version works with version ", "");
+                        release.tag_name = release.name + " - Tarkov Version: " + releasePatch;
+                        release.body = releasePatch;
+                        GithubReleases.Add(release);
+                    }
+                    else {
+                        // TODO Loggy.LogToFile("FetchReleases: There was a release without a version defined: " + release.html_url);
                     }
                 }
             }
             else {
-                // TODO Loggy.LogToFile("Install Server: githubReleases was 0 for official branch");
+                // TODO Loggy.LogToFile("InstallSIT: githubReleases was 0 for official branch");
+                return;
             }
 
             if (GithubReleases.Count > 0) {
@@ -76,8 +78,6 @@ namespace SIT.Manager.Avalonia.ViewModels.Dialogs
                 SelectedRelease = GithubReleases.First();
             }
         }
-
-        [GeneratedRegex("This server version works with EFT version ([0]{1,}\\.[0-9]{1,2}\\.[0-9]{1,2})\\.[0-9]{1,2}\\.[0-9]{1,5}")]
-        private static partial Regex ServerVersionRegex();
     }
 }
+

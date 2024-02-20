@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.Models;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -19,6 +18,12 @@ namespace SIT.Manager.Avalonia.ViewModels
         private BaseLocation? _location;
 
         [ObservableProperty]
+        private Wave? _selectedWave;
+
+        [ObservableProperty]
+        private int _selectedWaveIndex = 0;
+
+        [ObservableProperty]
         private string _loadedLocation = string.Empty;
 
         public IAsyncRelayCommand LoadCommand { get; }
@@ -29,16 +34,18 @@ namespace SIT.Manager.Avalonia.ViewModels
             _pickerDialogService = pickerDialogService;
 
             LoadCommand = new AsyncRelayCommand(Load);
+            SaveCommand = new AsyncRelayCommand(Save);
         }
 
         private async Task Load() {
-            IStorageFile? file = await _pickerDialogService.GetFileFromPickerAsync(new List<FilePickerFileType>() { FilePickerFileTypes.All });
+            IStorageFile? file = await _pickerDialogService.GetFileFromPickerAsync();
             if (file == null) {
                 return;
             }
 
             if (File.Exists(file.Path.LocalPath)) {
-                BaseLocation? location = JsonSerializer.Deserialize<BaseLocation>(await File.ReadAllTextAsync(file.Path.LocalPath));
+                string jsonString = await File.ReadAllTextAsync(file.Path.LocalPath);
+                BaseLocation? location = JsonSerializer.Deserialize<BaseLocation>(jsonString);
                 if (location == null) {
                     _barNotificationService.ShowError("Load Error", "There was an error saving the file.");
                     return;
@@ -90,7 +97,7 @@ namespace SIT.Manager.Avalonia.ViewModels
                 Location = location;
 
                 if (location.waves.Count > 0) {
-                    // TODO WaveList.SelectedIndex = 0;
+                    SelectedWave = location.waves[0];
                 }
 
                 if (location.BossLocationSpawn.Count > 0) {
@@ -100,46 +107,31 @@ namespace SIT.Manager.Avalonia.ViewModels
                 _barNotificationService.ShowSuccess("Load Location", $"Loaded location {LoadedLocation} successfully.");
             }
         }
-    }
 
-    /* TODO
-    public sealed partial class LocationEditor : Page
-    {
-        private async void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            FileSavePicker filePicker = new()
-            {
-                DefaultFileExtension = ".json",
-                SuggestedFileName = "base.json",
-                FileTypeChoices = { { "JSON", new List<string>() { ".json" } } }
-            };
-
-            IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.m_window);
-            WinRT.Interop.InitializeWithWindow.Initialize(filePicker, hwnd);
-
-            StorageFile file = await filePicker.PickSaveFileAsync();
-
-            if (file == null)
-                return;
-
-            if (File.Exists(file.Path))
-            {
-                File.Copy(file.Path, file.Path.Replace(".json", ".BAK"), true);
-            }
-
-            BaseLocation baseLocation = (BaseLocation)DataContext;
-            if (baseLocation == null)
-            {
-                Utils.ShowInfoBar("Save Error", "There was an error saving the file.", InfoBarSeverity.Error);
+        private async Task Save() {
+            IStorageFile? file = await _pickerDialogService.GetFileSaveFromPickerAsync(".json", "base.json");
+            if (file == null) {
                 return;
             }
-            var json = JsonSerializer.Serialize(baseLocation, new JsonSerializerOptions() { WriteIndented = true });
-            File.WriteAllText(file.Path, json);
-            Utils.ShowInfoBar("Save", $"Successfully saved the file to: {file.Path}", InfoBarSeverity.Success);
+
+            if (File.Exists(file.Path.LocalPath)) {
+                string backupFilePath = Path.Combine(file.Path.LocalPath, ".BAK");
+                File.Copy(file.Path.LocalPath, backupFilePath, true);
+            }
+
+            if (Location == null) {
+                _barNotificationService.ShowError("Save Error", "There was an error saving the file.");
+                return;
+            }
+            string json = JsonSerializer.Serialize(Location, new JsonSerializerOptions() { WriteIndented = true });
+            await File.WriteAllTextAsync(file.Path.LocalPath, json);
+
+            _barNotificationService.ShowSuccess("Save", $"Successfully saved the file to: {file.Path}");
         }
 
-        private void AddWaveButton_Click(object sender, RoutedEventArgs e)
-        {
+        [RelayCommand]
+        private void AddWave() {
+            /* TODO not really any point implementing this the funciton isn't enabled anyway            
             BaseLocation location = (BaseLocation)DataContext;
 
             if (location != null)
@@ -156,10 +148,12 @@ namespace SIT.Manager.Avalonia.ViewModels
                     WaveList.SelectedIndex = 0;
                 }
             }
+            */
         }
 
-        private void RemoveWaveButton_Click(object sender, RoutedEventArgs e)
-        {
+        [RelayCommand]
+        private void RemoveWave() {
+            /* TODO not really any point implementing this the funciton isn't enabled anyway
             if (WaveList.SelectedIndex == -1)
                 return;
 
@@ -179,50 +173,48 @@ namespace SIT.Manager.Avalonia.ViewModels
                     WaveList.SelectedIndex = 0;
                 }
             }
+            */
         }
 
-        private void AddBossButton_Click(object sender, RoutedEventArgs e)
-        {
-            BaseLocation location = (BaseLocation)DataContext;
+        [RelayCommand]
+        private void AddBoss() {
+            /* TODO not really any point implementing this the funciton isn't enabled anyway
+            BaseLocation location = (BaseLocation) DataContext;
 
-            if (location != null)
-            {
+            if (location != null) {
                 location.BossLocationSpawn.Add(new BossLocationSpawn());
 
-                for (int i = 0; i < location.BossLocationSpawn.Count; i++)
-                {
+                for (int i = 0; i < location.BossLocationSpawn.Count; i++) {
                     location.BossLocationSpawn[i].Name = i + 1;
                 }
 
-                if (location.BossLocationSpawn.Count > 0)
-                {
+                if (location.BossLocationSpawn.Count > 0) {
                     BossList.SelectedIndex = 0;
                 }
             }
+            */
         }
 
-        private void RemoveBossButton_Click(object sender, RoutedEventArgs e)
-        {
+        [RelayCommand]
+        private void RemoveBossCommand() {
+            /* TODO not really any point implementing this the funciton isn't enabled anyway
             if (BossList.SelectedIndex == -1)
                 return;
 
-            BaseLocation location = (BaseLocation)DataContext;
+            BaseLocation location = (BaseLocation) DataContext;
 
-            if (location != null)
-            {
+            if (location != null) {
                 location.BossLocationSpawn.RemoveAt(BossList.SelectedIndex);
 
-                for (int i = 0; i < location.BossLocationSpawn.Count; i++)
-                {
+                for (int i = 0; i < location.BossLocationSpawn.Count; i++) {
                     location.BossLocationSpawn[i].Name = i + 1;
                 }
 
-                if (location.BossLocationSpawn.Count > 0)
-                {
+                if (location.BossLocationSpawn.Count > 0) {
                     BossList.SelectedIndex = 0;
                 }
             }
+            */
         }
     }
-    */
 }

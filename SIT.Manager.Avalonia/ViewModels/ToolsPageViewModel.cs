@@ -8,6 +8,7 @@ using SIT.Manager.Avalonia.Models;
 using SIT.Manager.Avalonia.Models.Messages;
 using SIT.Manager.Avalonia.Services;
 using SIT.Manager.Avalonia.Views;
+using SIT.Manager.Avalonia.Views.Dialogs;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -60,26 +61,14 @@ namespace SIT.Manager.Avalonia.ViewModels
         }
 
         private async Task InstallSIT() {
-            /* TODO
-            GithubRelease? selectedVersion;
-
-            SelectSitVersionDialog selectWindow = new()
-            {
-                XamlRoot = Content.XamlRoot
-            };
-
+            SelectSitVersionDialog selectWindow = new();
             ContentDialogResult result = await selectWindow.ShowAsync();
-
-            selectedVersion = selectWindow.version;
-
-            if (selectedVersion == null || result != ContentDialogResult.Primary)
-            {
-                return;
+            if (result == ContentDialogResult.Primary) {
+                GithubRelease? selectedVersion = selectWindow.GetSelectedGithubRelease();
+                if (selectedVersion != null) {
+                    await _installerService.InstallSIT(selectedVersion);
+                }
             }
-
-            await Task.Run(() => Utils.InstallSIT(selectedVersion));
-            ManagerConfig.Save();
-            */
         }
 
         private async Task OpenETFFolder() {
