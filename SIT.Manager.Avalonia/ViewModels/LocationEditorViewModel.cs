@@ -1,30 +1,25 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using SIT.Manager.Avalonia.Interfaces;
+using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.ViewModels
 {
     public partial class LocationEditorViewModel : ViewModelBase
     {
+        private readonly IPickerDialogService _pickerDialogService;
+
         public IAsyncRelayCommand LoadCommand { get; }
         public IAsyncRelayCommand SaveCommand { get; }
-    }
 
+        public LocationEditorViewModel(IPickerDialogService pickerDialogService) {
+            _pickerDialogService = pickerDialogService;
 
-
-    /* TODO
-    public sealed partial class LocationEditor : Page
-    {
-        public LocationEditor()
-        {
-            this.InitializeComponent();
+            LoadCommand = new AsyncRelayCommand(Load);
         }
 
-        private void NewButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private async void LoadButton_Click(object sender, RoutedEventArgs e)
-        {
+        private async Task Load() {
+            await _pickerDialogService.GetFileFromPickerAsync();
+            /* TODO
             FileOpenPicker filePicker = new() 
             {
                 FileTypeFilter = { ".json" }
@@ -108,7 +103,23 @@ namespace SIT.Manager.Avalonia.ViewModels
 
                 Utils.ShowInfoBar("Load Location", $"Loaded location {LocationTextBox.Text} successfully.", InfoBarSeverity.Success);
             }
-                
+             */
+        }
+    }
+
+
+
+    /* TODO
+    public sealed partial class LocationEditor : Page
+    {
+        public LocationEditor()
+        {
+            this.InitializeComponent();
+        }
+
+        private void NewButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
 
         private async void SaveButton_Click(object sender, RoutedEventArgs e)

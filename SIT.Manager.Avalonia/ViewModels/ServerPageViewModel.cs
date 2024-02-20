@@ -3,9 +3,9 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
-using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
+using SIT.Manager.Avalonia.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -28,7 +28,7 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         private readonly IAkiServerService _akiServerService;
         private readonly IManagerConfigService _configService;
-        private readonly IDirectoryService _directoryService;
+        private readonly IFileService _fileService;
 
         [ObservableProperty]
         private Symbol _startServerButtonSymbolIcon = Symbol.Play;
@@ -40,10 +40,10 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         public IAsyncRelayCommand EditServerConfigCommand { get; }
 
-        public ServerPageViewModel(IAkiServerService akiServerService, IManagerConfigService configService, IDirectoryService directoryService) {
+        public ServerPageViewModel(IAkiServerService akiServerService, IManagerConfigService configService, IFileService fileService) {
             _akiServerService = akiServerService;
             _configService = configService;
-            _directoryService = directoryService;
+            _fileService = fileService;
 
             EditServerConfigCommand = new AsyncRelayCommand(EditServerConfig);
 
@@ -110,7 +110,7 @@ namespace SIT.Manager.Avalonia.ViewModels
             }
 
             string serverConfigPath = Path.Combine(serverPath, "Aki_Data", "Server", "configs");
-            await _directoryService.OpenDirectoryAsync(serverConfigPath);
+            await _fileService.OpenDirectoryAsync(serverConfigPath);
         }
 
         [RelayCommand]

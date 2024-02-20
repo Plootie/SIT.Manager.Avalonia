@@ -19,7 +19,6 @@ namespace SIT.Manager.Avalonia.ViewModels
         private readonly IAkiServerService _akiServerService;
         private readonly IBarNotificationService _barNotificationService;
         private readonly IManagerConfigService _configService;
-        private readonly IDirectoryService _directoryService;
         private readonly IFileService _fileService;
         private readonly ITarkovClientService _tarkovClientService;
 
@@ -40,13 +39,11 @@ namespace SIT.Manager.Avalonia.ViewModels
         public ToolsPageViewModel(IAkiServerService akiServerService,
                                   IBarNotificationService barNotificationService,
                                   IManagerConfigService configService,
-                                  IDirectoryService directoryService,
                                   IFileService fileService,
                                   ITarkovClientService tarkovClientService) {
             _akiServerService = akiServerService;
             _barNotificationService = barNotificationService;
             _configService = configService;
-            _directoryService = directoryService;
             _fileService = fileService;
             _tarkovClientService = tarkovClientService;
 
@@ -92,7 +89,7 @@ namespace SIT.Manager.Avalonia.ViewModels
                 await contentDialog.ShowAsync();
             }
             else {
-                await _directoryService.OpenDirectoryAsync(_configService.Config.InstallPath);
+                await _fileService.OpenDirectoryAsync(_configService.Config.InstallPath);
             }
         }
 
@@ -108,7 +105,7 @@ namespace SIT.Manager.Avalonia.ViewModels
             else {
                 string dirPath = Path.Combine(_configService.Config.InstallPath, "BepInEx", "plugins");
                 if (Directory.Exists(dirPath)) {
-                    await _directoryService.OpenDirectoryAsync(dirPath);
+                    await _fileService.OpenDirectoryAsync(dirPath);
                 }
                 else {
                     ContentDialog contentDialog = new() {

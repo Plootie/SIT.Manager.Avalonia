@@ -40,24 +40,24 @@ public sealed partial class App : Application
         services.AddSingleton<ITarkovClientService, TarkovClientService>();
         services.AddSingleton<IBarNotificationService, BarNotificationService>();
         services.AddTransient<IFileService, FileService>();
-        services.AddTransient<IDirectoryService>(x => {
-            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow?.StorageProvider is not { } provider) {
-                return new DirectoryService(new MainWindow());
-            }
-            return new DirectoryService(desktop.MainWindow);
-        });
         services.AddSingleton<IManagerConfigService, ManagerConfigService>();
         services.AddTransient<IModService, ModService>();
+        services.AddTransient<IPickerDialogService>(x => {
+            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow?.StorageProvider is not { } provider) {
+                return new PickerDialogService(new MainWindow());
+            }
+            return new PickerDialogService(desktop.MainWindow);
+        });
         services.AddSingleton<ITarkovClientService, TarkovClientService>();
         services.AddSingleton<IVersionService, VersionService>();
-        services.AddSingleton(new HttpClientHandler
-        {
+        services.AddSingleton(new HttpClientHandler {
             SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
             ServerCertificateCustomValidationCallback = delegate { return true; }
         });
         services.AddSingleton(provider => new HttpClient(provider.GetService<HttpClientHandler>() ?? throw new ArgumentNullException()));
 
         // Viewmodels
+        services.AddTransient<LocationEditorViewModel>();
         services.AddTransient<MainViewModel>();
         services.AddTransient<ModsPageViewModel>();
         services.AddTransient<PlayPageViewModel>();

@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SIT.Manager.Avalonia.Interfaces;
@@ -17,7 +18,7 @@ public partial class SettingsPageViewModel : ViewModelBase
 {
     private readonly IManagerConfigService _configsService;
     private readonly IBarNotificationService _barNotificationService;
-    private readonly IDirectoryService _directoryService;
+    private readonly IPickerDialogService _pickerDialogService;
     private readonly IVersionService _versionService;
 
     [ObservableProperty]
@@ -59,10 +60,10 @@ public partial class SettingsPageViewModel : ViewModelBase
 
     public SettingsPageViewModel(IManagerConfigService configService,
                                  IBarNotificationService barNotificationService,
-                                 IDirectoryService directoryService,
+                                 IPickerDialogService pickerDialogService,
                                  IVersionService versionService) {
         _configsService = configService;
-        _directoryService = directoryService;
+        _pickerDialogService = pickerDialogService;
         _barNotificationService = barNotificationService;
         _versionService = versionService;
 
@@ -93,10 +94,10 @@ public partial class SettingsPageViewModel : ViewModelBase
     /// <param name="filename">The filename to look for in the user specified directory</param>
     /// <returns>The path if the file exists, otherwise an empty string</returns>
     private async Task<string> GetPathLocation(string filename) {
-        string? directorySelectedPath = await _directoryService.GetDirectoryFromPickerAsync();
-        if (!string.IsNullOrEmpty(directorySelectedPath)) {
-            if (File.Exists(Path.Combine(directorySelectedPath, filename))) {
-                return directorySelectedPath;
+        IStorageFolder? directorySelected = await _pickerDialogService.GetDirectoryFromPickerAsync();
+        if (directorySelected != null) {
+            if (File.Exists(Path.Combine(directorySelected.Path.LocalPath, filename))) {
+                return directorySelected.Path.LocalPath;
             }
         }
         return string.Empty;
