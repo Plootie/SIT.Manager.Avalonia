@@ -42,7 +42,7 @@
 
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
-								<TextBlock Text="{Binding Messagge}"
+								<TextBlock Text="{Binding Message}"
 										   Foreground="{Binding TextColor}"
 										   FontFamily="{Binding TextFont}"
 										   TextWrapping="WrapWithOverflow"/>

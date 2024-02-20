@@ -11,6 +11,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using static SIT.Manager.Avalonia.Services.AkiServerService;
 
 namespace SIT.Manager.Avalonia.ViewModels
@@ -20,13 +22,15 @@ namespace SIT.Manager.Avalonia.ViewModels
     /// </summary>
     public partial class ServerPageViewModel : ViewModelBase
     {
-        private const int CONSOLE_LINE_LIMIT = 10_000;
+        private const int CONSOLE_LINE_LIMIT = 10_000_00;
 
         [GeneratedRegex("\\x1B(?:[@-Z\\\\-_]|\\[[0-?]*[ -/]*[@-~])")]
         private static partial Regex ConsoleTextRemoveANSIFilterRegex();
 
         private readonly IAkiServerService _akiServerService;
         private readonly IManagerConfigService _configService;
+        private FontFamily cachedFontFamily = FontFamily.Parse("Bender");
+        private SolidColorBrush cachedColorBrush = new(Color.FromRgb(255, 255, 255));
 
         [ObservableProperty]
         private Symbol _startServerButtonSymbolIcon = Symbol.Play;
@@ -42,6 +46,30 @@ namespace SIT.Manager.Avalonia.ViewModels
 
             _akiServerService.OutputDataReceived += AkiServer_OutputDataReceived;
             _akiServerService.RunningStateChanged += AkiServer_RunningStateChanged;
+
+            
+            UpdateCachedServerProperties(null, _configService.Config);
+            _configService.ConfigChanged += UpdateCachedServerProperties;
+
+            for(int i = 0; i < CONSOLE_LINE_LIMIT; i++)
+            {
+                AddConsole("Testing Testing 123");
+            }
+        }
+
+        private void UpdateCachedServerProperties(object? sender, ManagerConfig newConfig)
+        {
+            
+            FontFamily newFont = FontManager.Current.SystemFonts.FirstOrDefault(x => x.Name == newConfig.ConsoleFontFamily, FontFamily.Parse("Bender"));
+            if(!newFont.Name.Equals(cachedFontFamily.Name))
+            {
+                foreach (ConsoleText textEntry in ConsoleOutput)
+                {
+                    textEntry.TextFont = cachedFontFamily;
+                }
+            }
+
+            cachedColorBrush.Color = newConfig.ConsoleFontColor;
         }
 
         private void AddConsole(string text) {
@@ -57,10 +85,11 @@ namespace SIT.Manager.Avalonia.ViewModels
             text = ConsoleTextRemoveANSIFilterRegex().Replace(text, "");
 
             ConsoleText consoleTextEntry = new() {
-                TextColor = new SolidColorBrush(_configService.Config.ConsoleFontColor),
+                TextColor = cachedColorBrush,
                 TextFont = FontManager.Current.SystemFonts.FirstOrDefault(x => x.Name == _configService.Config.ConsoleFontFamily, FontFamily.Parse("Bender")),
-                Messagge = text
+                Message = text
             };
+
             ConsoleOutput.Add(consoleTextEntry);
         }
 

@@ -1,4 +1,5 @@
 ﻿using SIT.Manager.Avalonia.Models;
+using System;
 
 namespace SIT.Manager.Avalonia.Services
 {
@@ -8,5 +9,6 @@ namespace SIT.Manager.Avalonia.Services
 
         void Save(bool SaveAccount = false);
         void UpdateConfig(ManagerConfig config);
+        event EventHandler<ManagerConfig>? ConfigChanged;
     }
 }

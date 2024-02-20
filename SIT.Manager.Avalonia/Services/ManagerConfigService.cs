@@ -15,6 +15,8 @@ namespace SIT.Manager.Avalonia.Services
             private set { _config = value; }
         }
 
+        public event EventHandler<ManagerConfig>? ConfigChanged;
+
         public ManagerConfigService() {
             Load();
         }
@@ -64,6 +66,7 @@ namespace SIT.Manager.Avalonia.Services
 
         public void UpdateConfig(ManagerConfig config) {
             _config = config;
+            ConfigChanged?.Invoke(this, _config);
         }
     }
 }
