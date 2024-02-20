@@ -121,6 +121,5 @@ public partial class SettingsPageViewModel : ViewModelBase
         base.OnPropertyChanged(e);
 
         _configsService.UpdateConfig(Config);
-        _configsService.Save();
     }
 }

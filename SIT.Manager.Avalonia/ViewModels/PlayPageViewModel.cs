@@ -175,8 +175,7 @@ namespace SIT.Manager.Avalonia.ViewModels
             config.Password = Password;
             config.LastServer = LastServer;
             config.RememberLogin = RememberMe;
-            _configService.UpdateConfig(config);
-            _configService.Save(config.RememberLogin);
+            _configService.UpdateConfig(config, true, config.RememberLogin);
 
             Uri? serverAddress = GetUriFromAddress(LastServer);
 
