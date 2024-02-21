@@ -23,14 +23,10 @@ namespace SIT.Manager.Avalonia.Services
             if (!string.IsNullOrEmpty(serverPath)) {
                 // Combine the serverPath with the additional subpath.
                 string serverCachePath = Path.Combine(serverPath, "user", "cache");
-
-                foreach (string file in Directory.GetFiles(serverCachePath)) {
-                    File.Delete(file);
+                if (Directory.Exists(serverCachePath)) {
+                    Directory.Delete(serverCachePath, true);
                 }
-
-                foreach (string subDirectory in Directory.GetDirectories(serverCachePath)) {
-                    Directory.Delete(subDirectory, true);
-                }
+                Directory.CreateDirectory(serverCachePath);
             }
         }
 

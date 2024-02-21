@@ -20,17 +20,10 @@ namespace SIT.Manager.Avalonia.Services
             if (!string.IsNullOrEmpty(cachePath) && Directory.Exists(cachePath)) {
                 // Combine the installPath with the additional subpath.
                 cachePath = Path.Combine(cachePath, "BepInEx", "cache");
-
-                // Clear both EFT local cache and additional path.
-                foreach (string file in Directory.GetFiles(cachePath)) {
-                    File.Delete(file);
+                if (Directory.Exists(cachePath)) {
+                    Directory.Delete(cachePath, true);
                 }
-
-                foreach (string subDirectory in Directory.GetDirectories(cachePath)) {
-                    Directory.Delete(subDirectory, true);
-                }
-
-                // Optionally, display a success message or perform additional actions.
+                Directory.CreateDirectory(cachePath);
                 _barNotificationService.ShowInformational("Cache Cleared", "Everything cleared successfully!");
             }
             else {
@@ -50,23 +43,16 @@ namespace SIT.Manager.Avalonia.Services
 
             // Check if the directory exists.
             if (Directory.Exists(eftCachePath)) {
-                // Delete all files within the directory.
-                foreach (string file in Directory.GetFiles(eftCachePath)) {
-                    File.Delete(file);
-                }
-
-                // Delete all subdirectories and their contents.
-                foreach (string subDirectory in Directory.GetDirectories(eftCachePath)) {
-                    Directory.Delete(subDirectory, true);
-                }
-
-                // Optionally, display a success message or perform additional actions.
-                _barNotificationService.ShowInformational("Cache Cleared", "EFT local cache cleared successfully!");
+                Directory.Delete(eftCachePath, true);
             }
             else {
                 // Handle the case where the cache directory does not exist.
                 _barNotificationService.ShowWarning("Cache Clear Error", $"EFT local cache directory not found at: {eftCachePath}");
+                return;
             }
+
+            Directory.CreateDirectory(eftCachePath);
+            _barNotificationService.ShowInformational("Cache Cleared", "EFT local cache cleared successfully!");
         }
 
         public override void Start(string? arguments) {
