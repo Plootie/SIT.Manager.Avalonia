@@ -296,7 +296,6 @@ namespace SIT.Manager.Avalonia.Services
                     config = _configService.Config;
                     config.TarkovVersion = tarkovVersion;
                     _configService.UpdateConfig(config);
-                    _configService.Save();
                 }
 
                 string targetFileName = "Aki-Server-win-with-SITCoop.zip";
@@ -339,7 +338,6 @@ namespace SIT.Manager.Avalonia.Services
                 }
 
                 _configService.UpdateConfig(config);
-                _configService.Save();
 
                 _barNotificationService.ShowSuccess("Install", "Installation of Server was succesful.");
             }
@@ -385,7 +383,6 @@ namespace SIT.Manager.Avalonia.Services
                     config = _configService.Config;
                     config.TarkovVersion = tarkovVersion;
                     _configService.UpdateConfig(config);
-                    _configService.Save();
                 }
 
                 if (!Directory.Exists(coreFilesPath))
@@ -432,7 +429,6 @@ namespace SIT.Manager.Avalonia.Services
                 string sitVersion = _versionService.GetSITVersion(_configService.Config.InstallPath);
                 config.SitVersion = sitVersion;
                 _configService.UpdateConfig(config);
-                _configService.Save();
 
                 _barNotificationService.ShowSuccess("Install", "Installation of SIT was succesful.");
             }
