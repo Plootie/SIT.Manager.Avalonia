@@ -8,7 +8,7 @@ namespace SIT.Manager.Avalonia.Models
     {
         public List<object> AccessKeys { get; set; }
         public List<AirdropParameter> AirdropParameters { get; set; }
-        public int Area { get; set; }
+        public float Area { get; set; }
         public int AveragePlayTime { get; set; }
         public int AveragePlayerLevel { get; set; }
         public List<Banner> Banners { get; set; }
