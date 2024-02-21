@@ -17,6 +17,7 @@ namespace SIT.Manager.Avalonia.ViewModels.Dialogs
         [GeneratedRegex("This version works with version [0]{1,}\\.[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,5}")]
         private static partial Regex ClientVersionRegex();
 
+        private readonly HttpClient _httpClient;
 
         [ObservableProperty]
         private GithubRelease? _selectedRelease;
@@ -29,7 +30,9 @@ namespace SIT.Manager.Avalonia.ViewModels.Dialogs
         /// </summary>
         public ObservableCollection<GithubRelease> GithubReleases { get; } = [];
 
-        public SelectSitVersionDialogViewModel() {
+        public SelectSitVersionDialogViewModel(HttpClient httpClient) {
+            _httpClient = httpClient;
+
             RxApp.TaskpoolScheduler.Schedule(FetchReleases);
         }
 
@@ -38,16 +41,9 @@ namespace SIT.Manager.Avalonia.ViewModels.Dialogs
             List<GithubRelease> githubReleases = [];
 
             try {
-                using (HttpClient httpClient = new() {
-                    Timeout = TimeSpan.FromSeconds(15),
-                    DefaultRequestHeaders = {
-                            { "X-GitHub-Api-Version", "2022-11-28" },
-                            { "User-Agent", "request" }
-                        }
-                }) {
-                    string releasesJsonString = await httpClient.GetStringAsync(@"https://api.github.com/repos/stayintarkov/StayInTarkov.Client/releases");
-                    githubReleases = JsonSerializer.Deserialize<List<GithubRelease>>(releasesJsonString) ?? [];
-                }
+                string releasesJsonString = await _httpClient.GetStringAsync(@"https://api.github.com/repos/stayintarkov/StayInTarkov.Client/releases");
+                githubReleases = JsonSerializer.Deserialize<List<GithubRelease>>(releasesJsonString) ?? [];
+
             }
             catch (Exception ex) {
                 GithubReleases.Clear();

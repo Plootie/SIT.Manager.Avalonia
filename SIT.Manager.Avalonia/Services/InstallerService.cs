@@ -16,22 +16,17 @@ using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.Services
 {
-    public class InstallerService : IInstallerService
+    public class InstallerService(IBarNotificationService barNotificationService,
+                                  IManagerConfigService configService,
+                                  IFileService fileService,
+                                  HttpClient httpClient,
+                                  IVersionService versionService) : IInstallerService
     {
-        private readonly IBarNotificationService _barNotificationService;
-        private readonly IManagerConfigService _configService;
-        private readonly IFileService _fileService;
-        private readonly IVersionService _versionService;
-
-        public InstallerService(IBarNotificationService barNotificationService,
-                                IManagerConfigService configService,
-                                IFileService fileService,
-                                IVersionService versionService) {
-            _barNotificationService = barNotificationService;
-            _configService = configService;
-            _fileService = fileService;
-            _versionService = versionService;
-        }
+        private readonly IBarNotificationService _barNotificationService = barNotificationService;
+        private readonly IManagerConfigService _configService = configService;
+        private readonly IFileService _fileService = fileService;
+        private readonly HttpClient _httpClient = httpClient;
+        private readonly IVersionService _versionService = versionService;
 
         /// <summary>
         /// Cleans up the EFT directory
@@ -102,84 +97,76 @@ namespace SIT.Manager.Avalonia.Services
                 return false;
             }
 
-            using (HttpClient httpClient = new() {
-                Timeout = TimeSpan.FromSeconds(15),
-                DefaultRequestHeaders = {
-                            { "X-GitHub-Api-Version", "2022-11-28" },
-                            { "User-Agent", "request" }
-                        }
-            }) {
-                string releasesString = await httpClient.GetStringAsync(@"https://sitcoop.publicvm.com/api/v1/repos/SIT/Downgrade-Patches/releases");
-                List<GiteaRelease>? giteaReleases = JsonSerializer.Deserialize<List<GiteaRelease>>(releasesString);
-                if (giteaReleases == null) {
-                    // TODO Loggy.LogToFile("DownloadPatcher: giteaReleases is 'null'");
+            string releasesString = await _httpClient.GetStringAsync(@"https://sitcoop.publicvm.com/api/v1/repos/SIT/Downgrade-Patches/releases");
+            List<GiteaRelease>? giteaReleases = JsonSerializer.Deserialize<List<GiteaRelease>>(releasesString);
+            if (giteaReleases == null) {
+                // TODO Loggy.LogToFile("DownloadPatcher: giteaReleases is 'null'");
+                return false;
+            }
+
+            List<GiteaRelease> patcherList = [];
+            string tarkovBuild = _configService.Config.TarkovVersion.Split(".").Last();
+            string sitBuild = sitVersionTarget.Split(".").Last();
+            string tarkovVersionToDowngrade = tarkovBuild != sitBuild ? tarkovBuild : "";
+
+            if (string.IsNullOrEmpty(tarkovVersionToDowngrade)) {
+                // TODO Loggy.LogToFile("DownloadPatcher: tarkovVersionToDowngrade is 'null'");
+                return false;
+            }
+
+            foreach (var release in giteaReleases) {
+                var releaseName = release.name;
+                var patcherFrom = releaseName.Split(" to ")[0];
+                var patcherTo = releaseName.Split(" to ")[1];
+
+                if (patcherFrom == tarkovVersionToDowngrade) {
+                    patcherList.Add(release);
+                    tarkovVersionToDowngrade = patcherTo;
+                }
+            }
+
+            if (patcherList.Count == 0 && _configService.Config.SitVersion != sitVersionTarget) {
+                // TODO Loggy.LogToFile("No applicable patcher found for the specified SIT version.");
+                return false;
+            }
+
+            foreach (var patcher in patcherList) {
+                string mirrorsUrl = patcher.assets.Find(q => q.name == "mirrors.json")?.browser_download_url ?? string.Empty;
+                if (string.IsNullOrEmpty(mirrorsUrl)) {
+                    // TODO Loggy.LogToFile("No mirrors url found in mirrors.json.");
                     return false;
                 }
 
-                List<GiteaRelease> patcherList = new();
-                string tarkovBuild = _configService.Config.TarkovVersion.Split(".").Last();
-                string sitBuild = sitVersionTarget.Split(".").Last();
-                string tarkovVersionToDowngrade = tarkovBuild != sitBuild ? tarkovBuild : "";
-
-                if (string.IsNullOrEmpty(tarkovVersionToDowngrade)) {
-                    // TODO Loggy.LogToFile("DownloadPatcher: tarkovVersionToDowngrade is 'null'");
+                string mirrorsString = await _httpClient.GetStringAsync(mirrorsUrl);
+                List<Mirrors>? mirrors = JsonSerializer.Deserialize<List<Mirrors>>(mirrorsString);
+                if (mirrors == null || mirrors.Count == 0) {
+                    // TODO Loggy.LogToFile("No download mirrors found for patcher.");
                     return false;
                 }
 
-                foreach (var release in giteaReleases) {
-                    var releaseName = release.name;
-                    var patcherFrom = releaseName.Split(" to ")[0];
-                    var patcherTo = releaseName.Split(" to ")[1];
-
-                    if (patcherFrom == tarkovVersionToDowngrade) {
-                        patcherList.Add(release);
-                        tarkovVersionToDowngrade = patcherTo;
-                    }
-                }
-
-                if (patcherList.Count == 0 && _configService.Config.SitVersion != sitVersionTarget) {
-                    // TODO Loggy.LogToFile("No applicable patcher found for the specified SIT version.");
+                string selectedMirrorUrl = await ShowMirrorSelectionDialog(mirrors);
+                if (string.IsNullOrEmpty(selectedMirrorUrl)) {
+                    // TODO Loggy.LogToFile("Mirror selection was canceled or no mirror was selected.");
                     return false;
                 }
 
-                foreach (var patcher in patcherList) {
-                    string mirrorsUrl = patcher.assets.Find(q => q.name == "mirrors.json")?.browser_download_url ?? string.Empty;
-                    if (string.IsNullOrEmpty(mirrorsUrl)) {
-                        // TODO Loggy.LogToFile("No mirrors url found in mirrors.json.");
-                        return false;
-                    }
+                bool downloadSuccess = await _fileService.DownloadFile("Patcher.zip", _configService.Config.InstallPath, selectedMirrorUrl, true);
+                if (!downloadSuccess) {
+                    // TODO Loggy.LogToFile("Failed to download the patcher from the selected mirror.");
+                    return false;
+                }
 
-                    string mirrorsString = await httpClient.GetStringAsync(mirrorsUrl);
-                    List<Mirrors>? mirrors = JsonSerializer.Deserialize<List<Mirrors>>(mirrorsString);
-                    if (mirrors == null || mirrors.Count == 0) {
-                        // TODO Loggy.LogToFile("No download mirrors found for patcher.");
-                        return false;
-                    }
+                await _fileService.ExtractArchive(Path.Combine(_configService.Config.InstallPath, @"Patcher.zip"), _configService.Config.InstallPath);
+                var patcherDir = Directory.GetDirectories(_configService.Config.InstallPath, "Patcher*").FirstOrDefault();
+                if (!string.IsNullOrEmpty(patcherDir)) {
+                    CloneDirectory(patcherDir, _configService.Config.InstallPath);
+                    Directory.Delete(patcherDir, true);
+                }
 
-                    string selectedMirrorUrl = await ShowMirrorSelectionDialog(mirrors);
-                    if (string.IsNullOrEmpty(selectedMirrorUrl)) {
-                        // TODO Loggy.LogToFile("Mirror selection was canceled or no mirror was selected.");
-                        return false;
-                    }
-
-                    bool downloadSuccess = await _fileService.DownloadFile("Patcher.zip", _configService.Config.InstallPath, selectedMirrorUrl, true);
-                    if (!downloadSuccess) {
-                        // TODO Loggy.LogToFile("Failed to download the patcher from the selected mirror.");
-                        return false;
-                    }
-
-                    await _fileService.ExtractArchive(Path.Combine(_configService.Config.InstallPath, @"Patcher.zip"), _configService.Config.InstallPath);
-                    var patcherDir = Directory.GetDirectories(_configService.Config.InstallPath, "Patcher*").FirstOrDefault();
-                    if (!string.IsNullOrEmpty(patcherDir)) {
-                        CloneDirectory(patcherDir, _configService.Config.InstallPath);
-                        Directory.Delete(patcherDir, true);
-                    }
-
-                    string patcherResult = await RunPatcher();
-                    if (patcherResult != "Patcher was successful.") {
-                        // TODO Loggy.LogToFile($"Patcher failed: {patcherResult}");
-                        return false;
-                    }
+                string patcherResult = await RunPatcher();
+                if (patcherResult != "Patcher was successful.") {
+                    // TODO Loggy.LogToFile($"Patcher failed: {patcherResult}");
+                    return false;
                 }
             }
 
@@ -210,7 +197,7 @@ namespace SIT.Manager.Avalonia.Services
             patcherProcess.Start();
             await patcherProcess.WaitForExitAsync();
 
-            string patcherResult = string.Empty;
+            string patcherResult;
             switch (patcherProcess.ExitCode) {
                 case 0: {
                         patcherResult = "Patcher was closed.";
