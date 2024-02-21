@@ -16,7 +16,7 @@ namespace SIT.Manager.Avalonia.Services
         [GeneratedRegex("[1]{1,}\\.[0-9]{1,2}\\.[0-9]{1,5}\\.[0-9]{1,5}")]
         private static partial Regex SITVersionRegex();
 
-        private string GetFileProductVersionString(string filePath) {
+        private static string GetFileProductVersionString(string filePath) {
             if (!File.Exists(filePath)) {
                 return string.Empty;
             }

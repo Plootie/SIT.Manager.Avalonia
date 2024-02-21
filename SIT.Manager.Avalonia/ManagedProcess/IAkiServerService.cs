@@ -1,7 +1,5 @@
-﻿using SIT.Manager.Avalonia.Models;
-using System;
+﻿using System;
 using System.Diagnostics;
-using static SIT.Manager.Avalonia.Services.AkiServerService;
 
 namespace SIT.Manager.Avalonia.ManagedProcess
 {

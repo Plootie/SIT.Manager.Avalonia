@@ -4,11 +4,11 @@ using SIT.Manager.Avalonia.ViewModels;
 
 namespace SIT.Manager.Avalonia.Views
 {
-    public partial class ToolsPage : UserControl
+    public partial class LocationEditorView : UserControl
     {
-        public ToolsPage() {
+        public LocationEditorView() {
+            this.DataContext = App.Current.Services.GetService<LocationEditorViewModel>();
             InitializeComponent();
-            this.DataContext = App.Current.Services.GetService<ToolsPageViewModel>();
         }
     }
 }

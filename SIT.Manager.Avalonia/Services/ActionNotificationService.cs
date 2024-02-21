@@ -1,4 +1,5 @@
-﻿using SIT.Manager.Avalonia.Models;
+﻿using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.Models;
 using System;
 
 namespace SIT.Manager.Avalonia.Services

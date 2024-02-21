@@ -20,5 +20,15 @@ namespace SIT.Manager.Avalonia.Services
         /// <param name="destination">The destination to extract to</param>
         /// <returns></returns>
         Task ExtractArchive(string filePath, string destination);
+        /// <summary>
+        /// Open the system file manager at the path requested, if the directory doesn't exist then do nothing
+        /// </summary>
+        /// <param name="path">Path to open file manager at</param>
+        Task OpenDirectoryAsync(string path);
+        /// <summary>
+        /// Open the requested file in the default system handler, if the file doesn't exist do nothing.
+        /// </summary>
+        /// <param name="path">The path of the file to open</param>
+        Task OpenFileAsync(string path);
     }
 }

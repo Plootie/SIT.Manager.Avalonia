@@ -1,14 +1,15 @@
-﻿using System;
+﻿using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.ManagedProcess;
+using SIT.Manager.Avalonia.ViewModels;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using SIT.Manager.Avalonia.ManagedProcess;
-using SIT.Manager.Avalonia.Models;
-using SIT.Manager.Avalonia.ViewModels;
 
 namespace SIT.Manager.Avalonia.Services
 {
-    public class AkiServerService(IManagerConfigService configService) : ManagedProcess.ManagedProcess(configService), IAkiServerService
+    public class AkiServerService(IBarNotificationService barNotificationService,
+                                  IManagerConfigService configService) : ManagedProcess.ManagedProcess(barNotificationService, configService), IAkiServerService
     {
         private const string SERVER_EXE = "Aki.Server.exe";
         protected override string EXECUTABLE_NAME => SERVER_EXE;
@@ -16,6 +17,19 @@ namespace SIT.Manager.Avalonia.Services
         public event EventHandler<DataReceivedEventArgs>? OutputDataReceived;
         public event EventHandler? ServerStarted;
         public bool IsStarted { get; private set; } = false;
+
+        public override void ClearCache() {
+            string serverPath = _configService.Config.AkiServerPath;
+            if (!string.IsNullOrEmpty(serverPath)) {
+                // Combine the serverPath with the additional subpath.
+                string serverCachePath = Path.Combine(serverPath, "user", "cache");
+                if (Directory.Exists(serverCachePath)) {
+                    Directory.Delete(serverCachePath, true);
+                }
+                Directory.CreateDirectory(serverCachePath);
+            }
+        }
+
         public bool IsUnhandledInstanceRunning() {
             Process[] akiServerProcesses = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SERVER_EXE));
 
@@ -53,12 +67,10 @@ namespace SIT.Manager.Avalonia.Services
 
             _process.OutputDataReceived += new DataReceivedEventHandler((sender, e) => OutputDataReceived?.Invoke(sender, e));
             DataReceivedEventHandler? startedEventHandler = null;
-            startedEventHandler = new DataReceivedEventHandler((sender, e) =>
-            {
+            startedEventHandler = new DataReceivedEventHandler((sender, e) => {
                 if (ServerPageViewModel.ConsoleTextRemoveANSIFilterRegex()
                 .Replace(e.Data ?? string.Empty, "")
-                .Equals("Server is running, do not close while playing SPT, Happy playing!!", StringComparison.InvariantCultureIgnoreCase))
-                {
+                .Equals("Server is running, do not close while playing SPT, Happy playing!!", StringComparison.InvariantCultureIgnoreCase)) {
                     IsStarted = true;
                     ServerStarted?.Invoke(sender, e);
                     _process.OutputDataReceived -= startedEventHandler;

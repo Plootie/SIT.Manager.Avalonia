@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.ManagedProcess
 {
@@ -12,6 +8,10 @@ namespace SIT.Manager.Avalonia.ManagedProcess
         string ExecutableFilePath { get; }
         RunningState State { get; }
         event EventHandler<RunningState>? RunningStateChanged;
+        /// <summary>
+        /// Clear the cache for the process.
+        /// </summary>
+        void ClearCache();
         void Stop();
         void Start(string? arguments = null);
     }
