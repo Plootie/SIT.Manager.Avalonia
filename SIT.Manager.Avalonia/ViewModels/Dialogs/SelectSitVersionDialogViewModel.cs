@@ -55,7 +55,7 @@ namespace SIT.Manager.Avalonia.ViewModels.Dialogs
                     Match match = ClientVersionRegex().Match(release.body);
                     if (match.Success) {
                         string releasePatch = match.Value.Replace("This version works with version ", "");
-                        release.tag_name = release.name + " - Tarkov Version: " + releasePatch;
+                        release.tag_name = $"{release.name} - Tarkov Version: {releasePatch}";
                         release.body = releasePatch;
                         GithubReleases.Add(release);
                     }

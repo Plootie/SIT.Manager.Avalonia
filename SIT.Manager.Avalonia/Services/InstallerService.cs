@@ -124,10 +124,14 @@ namespace SIT.Manager.Avalonia.Services
                 return false;
             }
 
-            foreach (var release in giteaReleases) {
-                var releaseName = release.name;
-                var patcherFrom = releaseName.Split(" to ")[0];
-                var patcherTo = releaseName.Split(" to ")[1];
+            foreach (GiteaRelease release in giteaReleases) {
+                string[] splitRelease = release.name.Split("to");
+                if (splitRelease.Length != 2) {
+                    return false;
+                }
+
+                string patcherFrom = splitRelease[0].Trim();
+                string patcherTo = splitRelease[1].Trim();
 
                 if (patcherFrom == tarkovVersionToDowngrade) {
                     patcherList.Add(release);
@@ -207,11 +211,6 @@ namespace SIT.Manager.Avalonia.Services
             patcherProcess.Start();
             await patcherProcess.WaitForExitAsync();
 
-            bool gotPatcherResult = _patcherResultMessages.TryGetValue(patcherProcess.ExitCode, out string? patcherResult);
-            if (!gotPatcherResult) {
-                patcherResult = "Unknown error.";
-            }
-
             // Success exit code
             if (patcherProcess.ExitCode == 10) {
                 if (File.Exists(patcherPath)) {
@@ -227,8 +226,9 @@ namespace SIT.Manager.Avalonia.Services
                 }
             }
 
+            _patcherResultMessages.TryGetValue(patcherProcess.ExitCode, out string? patcherResult);
             // TODO Loggy.LogToFile("RunPatcher: " + patcherResult);
-            return patcherResult;
+            return patcherResult ?? "Unknown error.";
         }
 
         /// <summary>
@@ -241,9 +241,7 @@ namespace SIT.Manager.Avalonia.Services
             foreach (var mirror in mirrors) {
                 Uri uri = new(mirror.Link);
                 string host = uri.Host.Replace("www.", "").Split('.')[0];
-                if (!providerLinks.ContainsKey(host)) {
-                    providerLinks.Add(host, mirror.Link);
-                }
+                providerLinks.TryAdd(host, mirror.Link);
             }
 
             // Wrap the ComboBox in a StackPanel for alignment

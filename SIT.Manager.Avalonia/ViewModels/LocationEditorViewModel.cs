@@ -15,6 +15,19 @@ namespace SIT.Manager.Avalonia.ViewModels
         private readonly IBarNotificationService _barNotificationService;
         private readonly IPickerDialogService _pickerDialogService;
 
+        private static Dictionary<string, string> _mapLocationMapping = new Dictionary<string, string>() {
+            { "maps/factory_day_preset.bundle","Factory (Day)" },
+            { "maps/factory_night_preset.bundle",  "Factory (Night)" },
+            { "maps/woods_preset.bundle",  "Woods" },
+            { "maps/customs_preset.bundle", "Customs" },
+            { "maps/shopping_mall.bundle", "Interchange" },
+            { "maps/rezerv_base_preset.bundle", "Reserve" },
+            { "maps/shoreline_preset.bundle", "Shoreline" },
+            { "maps/laboratory_preset.bundle", "Labs" },
+            { "maps/lighthouse_preset.bundle", "Lighthouse" },
+            { "maps/city_preset.bundle","Streets" }
+        };
+
         [ObservableProperty]
         private BaseLocation? _location;
 
@@ -114,40 +127,8 @@ namespace SIT.Manager.Avalonia.ViewModels
                     location.BossLocationSpawn[i].Name = i + 1;
                 }
 
-                switch (location.Scene.path) {
-                    case "maps/factory_day_preset.bundle":
-                        LoadedLocation = "Factory (Day)";
-                        break;
-                    case "maps/factory_night_preset.bundle":
-                        LoadedLocation = "Factory (Night)";
-                        break;
-                    case "maps/woods_preset.bundle":
-                        LoadedLocation = "Woods";
-                        break;
-                    case "maps/customs_preset.bundle":
-                        LoadedLocation = "Customs";
-                        break;
-                    case "maps/shopping_mall.bundle":
-                        LoadedLocation = "Interchange";
-                        break;
-                    case "maps/rezerv_base_preset.bundle":
-                        LoadedLocation = "Reserve";
-                        break;
-                    case "maps/shoreline_preset.bundle":
-                        LoadedLocation = "Shoreline";
-                        break;
-                    case "maps/laboratory_preset.bundle":
-                        LoadedLocation = "Labs";
-                        break;
-                    case "maps/lighthouse_preset.bundle":
-                        LoadedLocation = "Lighthouse";
-                        break;
-                    case "maps/city_preset.bundle":
-                        LoadedLocation = "Streets";
-                        break;
-                    default:
-                        break;
-                }
+                _mapLocationMapping.TryGetValue(location.Scene.path, out string? map);
+                LoadedLocation = map ?? "Unknown Location";
 
                 Location = location;
 
