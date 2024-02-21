@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using ReactiveUI;
 using SIT.Manager.Avalonia.Models;
-using SIT.Manager.Avalonia.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

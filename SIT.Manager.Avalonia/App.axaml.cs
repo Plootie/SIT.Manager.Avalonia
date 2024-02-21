@@ -41,17 +41,18 @@ public sealed partial class App : Application
         services.AddSingleton<ITarkovClientService, TarkovClientService>();
         services.AddSingleton<IBarNotificationService, BarNotificationService>();
         services.AddTransient<IFileService, FileService>();
-        services.AddTransient<IFolderPickerService>(x => {
-            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow?.StorageProvider is not { } provider) {
-                return new FolderPickerService(new MainWindow());
-            }
-            return new FolderPickerService(desktop.MainWindow);
-        });
+        services.AddTransient<IInstallerService, InstallerService>();
         services.AddSingleton<IManagerConfigService, ManagerConfigService>();
         services.AddTransient<IModService, ModService>();
+        services.AddTransient<IPickerDialogService>(x => {
+            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop || desktop.MainWindow?.StorageProvider is not { } provider) {
+                return new PickerDialogService(new MainWindow());
+            }
+            return new PickerDialogService(desktop.MainWindow);
+        });
+        services.AddSingleton<ITarkovClientService, TarkovClientService>();
         services.AddSingleton<IVersionService, VersionService>();
-        services.AddSingleton(new HttpClientHandler
-        {
+        services.AddSingleton(new HttpClientHandler {
             SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
             ServerCertificateCustomValidationCallback = delegate { return true; }
         });
@@ -59,11 +60,13 @@ public sealed partial class App : Application
         services.AddSingleton<IZlibService, ZlibService>();
 
         // Viewmodels
+        services.AddTransient<LocationEditorViewModel>();
         services.AddTransient<MainViewModel>();
         services.AddTransient<ModsPageViewModel>();
+        services.AddTransient<PlayPageViewModel>();
         services.AddTransient<SettingsPageViewModel>();
         services.AddTransient<ServerPageViewModel>();
-        services.AddTransient<PlayPageViewModel>();
+        services.AddTransient<ToolsPageViewModel>();
 
         return services.BuildServiceProvider();
     }

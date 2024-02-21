@@ -18,8 +18,8 @@ namespace SIT.Manager.Avalonia.ViewModels;
 public partial class SettingsPageViewModel : ViewModelBase
 {
     private readonly IManagerConfigService _configsService;
-    private readonly IFolderPickerService _folderPickerService;
     private readonly IBarNotificationService _barNotificationService;
+    private readonly IPickerDialogService _pickerDialogService;
     private readonly IVersionService _versionService;
 
     [ObservableProperty]
@@ -40,10 +40,10 @@ public partial class SettingsPageViewModel : ViewModelBase
 
     public SettingsPageViewModel(IManagerConfigService configService,
                                  IBarNotificationService barNotificationService,
-                                 IFolderPickerService folderPickerService,
+                                 IPickerDialogService pickerDialogService,
                                  IVersionService versionService) {
         _configsService = configService;
-        _folderPickerService = folderPickerService;
+        _pickerDialogService = pickerDialogService;
         _barNotificationService = barNotificationService;
         _versionService = versionService;
 
@@ -63,27 +63,15 @@ public partial class SettingsPageViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Parse the directory path we get from the folder picker 
-    /// </summary>
-    /// <param name="path">The folder picker path</param>
-    /// <returns>A cleaned ready to use path</returns>
-    private static string ParseFolderPickerPath(string path) {
-        // For some reason the abolute path returns spaces as the %20 escape code
-        string filteredPath = path.Replace("%20", " ");
-        return filteredPath;
-    }
-
-    /// <summary>
     /// Gets the path containing the required filename based on the folder picker selection from a user
     /// </summary>
     /// <param name="filename">The filename to look for in the user specified directory</param>
     /// <returns>The path if the file exists, otherwise an empty string</returns>
     private async Task<string> GetPathLocation(string filename) {
-        IStorageFolder? folderSelected = await _folderPickerService.OpenFolderAsync();
-        if (folderSelected != null) {
-            string directoryPath = ParseFolderPickerPath(folderSelected.Path.AbsolutePath);
-            if (File.Exists(Path.Combine(directoryPath, filename))) {
-                return directoryPath;
+        IStorageFolder? directorySelected = await _pickerDialogService.GetDirectoryFromPickerAsync();
+        if (directorySelected != null) {
+            if (File.Exists(Path.Combine(directorySelected.Path.LocalPath, filename))) {
+                return directorySelected.Path.LocalPath;
             }
         }
         return string.Empty;

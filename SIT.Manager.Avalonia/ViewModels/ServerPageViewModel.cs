@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
 using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
+using SIT.Manager.Avalonia.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -31,6 +32,7 @@ namespace SIT.Manager.Avalonia.ViewModels
         private readonly IManagerConfigService _configService;
         private FontFamily cachedFontFamily = FontFamily.Parse("Bender");
         private SolidColorBrush cachedColorBrush = new(Color.FromRgb(255, 255, 255));
+        private readonly IFileService _fileService;
 
         [ObservableProperty]
         private Symbol _startServerButtonSymbolIcon = Symbol.Play;
@@ -40,13 +42,17 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         public ObservableCollection<ConsoleText> ConsoleOutput { get; } = [];
 
-        public ServerPageViewModel(IManagerConfigService configService, IAkiServerService akiServerService) {
-            _configService = configService;
+        public IAsyncRelayCommand EditServerConfigCommand { get; }
+
+        public ServerPageViewModel(IAkiServerService akiServerService, IManagerConfigService configService, IFileService fileService) {
             _akiServerService = akiServerService;
+            _configService = configService;
+            _fileService = fileService;
+
+            EditServerConfigCommand = new AsyncRelayCommand(EditServerConfig);
 
             _akiServerService.OutputDataReceived += AkiServer_OutputDataReceived;
             _akiServerService.RunningStateChanged += AkiServer_RunningStateChanged;
-
             
             UpdateCachedServerProperties(null, _configService.Config);
             _configService.ConfigChanged += UpdateCachedServerProperties;
@@ -120,9 +126,14 @@ namespace SIT.Manager.Avalonia.ViewModels
             });
         }
 
-        [RelayCommand]
-        private void EditServerConfig() {
-            // TODO here so VS picks it up as it doesn't in XAML -- this literally does nothing and as far as I can see was never implemented in the current manager either
+        private async Task EditServerConfig() {
+            string serverPath = _configService.Config.AkiServerPath;
+            if (string.IsNullOrEmpty(serverPath)) {
+                return;
+            }
+
+            string serverConfigPath = Path.Combine(serverPath, "Aki_Data", "Server", "configs");
+            await _fileService.OpenDirectoryAsync(serverConfigPath);
         }
 
         [RelayCommand]
