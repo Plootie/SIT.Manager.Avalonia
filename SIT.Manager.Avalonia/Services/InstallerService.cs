@@ -28,6 +28,16 @@ namespace SIT.Manager.Avalonia.Services
         private readonly HttpClient _httpClient = httpClient;
         private readonly IVersionService _versionService = versionService;
 
+        private static readonly Dictionary<int, string> _patcherResultMessages = new() {
+            { 0, "Patcher was closed." },
+            { 10, "Patcher was successful." },
+            { 11, "Could not find 'EscapeFromTarkov.exe'." },
+            { 12, "'Aki_Patches' is missing." },
+            { 13, "Install folder is missing a file." },
+            { 14, "Install folder is missing a folder." },
+            { 15, "Patcher failed." }
+        };
+
         /// <summary>
         /// Cleans up the EFT directory
         /// </summary>
@@ -197,52 +207,26 @@ namespace SIT.Manager.Avalonia.Services
             patcherProcess.Start();
             await patcherProcess.WaitForExitAsync();
 
-            string patcherResult;
-            switch (patcherProcess.ExitCode) {
-                case 0: {
-                        patcherResult = "Patcher was closed.";
-                        break;
-                    }
-                case 10: {
-                        patcherResult = "Patcher was successful.";
-                        if (File.Exists(patcherPath)) {
-                            File.Delete(patcherPath);
-                        }
-
-                        if (File.Exists(Path.Combine(_configService.Config.InstallPath, "Patcher.log"))) {
-                            File.Delete(Path.Combine(_configService.Config.InstallPath, "Patcher.log"));
-                        }
-
-                        if (Directory.Exists(Path.Combine(_configService.Config.InstallPath, "Aki_Patches"))) {
-                            Directory.Delete(Path.Combine(_configService.Config.InstallPath, "Aki_Patches"), true);
-                        }
-                        break;
-                    }
-                case 11: {
-                        patcherResult = "Could not find 'EscapeFromTarkov.exe'.";
-                        break;
-                    }
-                case 12: {
-                        patcherResult = "'Aki_Patches' is missing.";
-                        break;
-                    }
-                case 13: {
-                        patcherResult = "Install folder is missing a file.";
-                        break;
-                    }
-                case 14: {
-                        patcherResult = "Install folder is missing a folder.";
-                        break;
-                    }
-                case 15: {
-                        patcherResult = "Patcher failed.";
-                        break;
-                    }
-                default: {
-                        patcherResult = "Unknown error.";
-                        break;
-                    }
+            bool gotPatcherResult = _patcherResultMessages.TryGetValue(patcherProcess.ExitCode, out string? patcherResult);
+            if (!gotPatcherResult) {
+                patcherResult = "Unknown error.";
             }
+
+            // Success exit code
+            if (patcherProcess.ExitCode == 10) {
+                if (File.Exists(patcherPath)) {
+                    File.Delete(patcherPath);
+                }
+
+                if (File.Exists(Path.Combine(_configService.Config.InstallPath, "Patcher.log"))) {
+                    File.Delete(Path.Combine(_configService.Config.InstallPath, "Patcher.log"));
+                }
+
+                if (Directory.Exists(Path.Combine(_configService.Config.InstallPath, "Aki_Patches"))) {
+                    Directory.Delete(Path.Combine(_configService.Config.InstallPath, "Aki_Patches"), true);
+                }
+            }
+
             // TODO Loggy.LogToFile("RunPatcher: " + patcherResult);
             return patcherResult;
         }
