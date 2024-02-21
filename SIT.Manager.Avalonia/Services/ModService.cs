@@ -66,7 +66,6 @@ namespace SIT.Manager.Avalonia.Services
                     ManagerConfig config = _configService.Config;
                     config.InstalledMods.Remove(mod.Name);
                     _configService.UpdateConfig(config);
-                    _configService.Save();
 
                     await InstallMod(mod, true);
                 }
@@ -125,7 +124,6 @@ namespace SIT.Manager.Avalonia.Services
                 ManagerConfig config = _configService.Config;
                 config.InstalledMods.Add(mod.Name, mod.PortVersion);
                 _configService.UpdateConfig(config);
-                _configService.Save();
 
                 if (!suppressNotification) {
                     _barNotificationService.ShowSuccess("Install Mod", $"{mod.Name} was successfully installed.");
@@ -196,7 +194,6 @@ namespace SIT.Manager.Avalonia.Services
                 ManagerConfig config = _configService.Config;
                 config.InstalledMods.Remove(mod.Name);
                 _configService.UpdateConfig(config);
-                _configService.Save();
 
                 _barNotificationService.ShowSuccess("Uninstall Mod", $"{mod.Name} was successfully uninstalled.");
             }

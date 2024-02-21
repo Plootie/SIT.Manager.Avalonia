@@ -1,11 +1,14 @@
 ﻿using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
+using ReactiveUI;
 
 namespace SIT.Manager.Avalonia.Models
 {
-    public class ConsoleText
+    public partial class ConsoleText : ObservableObject
     {
         public SolidColorBrush TextColor { get; set; } = new SolidColorBrush(Colors.White);
-        public FontFamily TextFont { get; set; } = FontFamily.Default;
-        public string Messagge { get; set; } = string.Empty;
+        [ObservableProperty]
+        private FontFamily _textFont = FontFamily.Default;
+        public string Message { get; set; } = string.Empty;
     }
 }

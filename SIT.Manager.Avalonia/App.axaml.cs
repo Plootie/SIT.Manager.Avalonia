@@ -2,6 +2,7 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using SIT.Manager.Avalonia.Classes;
 using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Services;
@@ -17,7 +18,7 @@ public sealed partial class App : Application
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use
     /// </summary>
-    public new static App Current => (App) Application.Current;
+    public new static App Current => Application.Current as App ?? throw new ArgumentNullException(nameof(Application.Current));
 
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> instance to resolve application services.
@@ -56,6 +57,7 @@ public sealed partial class App : Application
             ServerCertificateCustomValidationCallback = delegate { return true; }
         });
         services.AddSingleton(provider => new HttpClient(provider.GetService<HttpClientHandler>() ?? throw new ArgumentNullException()));
+        services.AddSingleton<IZlibService, ZlibService>();
 
         // Viewmodels
         services.AddTransient<LocationEditorViewModel>();

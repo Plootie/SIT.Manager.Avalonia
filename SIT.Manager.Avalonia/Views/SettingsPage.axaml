@@ -27,10 +27,10 @@
 					<StackPanel>
 						<CheckBox Content="Close Launcher After Game Launch" 
 								  ToolTip.Tip="Closes the launcher automatically after opening the game."
-								  IsChecked="{Binding CloseAfterLaunch, Mode=TwoWay}"/>
+								  IsChecked="{Binding Config.CloseAfterLaunch, Mode=TwoWay}"/>
 						<CheckBox Content="Look For Updates" 
 								  ToolTip.Tip="Automatically look for updates when opening the launcher."
-								  IsChecked="{Binding LookForUpdates, Mode=TwoWay}"/>
+								  IsChecked="{Binding Config.LookForUpdates, Mode=TwoWay}"/>
 					</StackPanel>
 				</Border>
 				
@@ -45,7 +45,7 @@
 									 MinWidth="425" 
 									 MaxWidth="425" 
 									 IsReadOnly="True"
-									 Text="{Binding InstallPath}"/>
+									 Text="{Binding Config.InstallPath}"/>
 							<Button Name="ChangeInstallButton" 
 									Content="Change"
 									Margin="0,0,10,0" 
@@ -54,11 +54,11 @@
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="EFT Version:" Margin="0,10,10,0" VerticalAlignment="Center"/>
-							<SelectableTextBlock Text="{Binding TarkovVersion, Mode=TwoWay}" Margin="0,10,10,0" VerticalAlignment="Center"/>
+							<SelectableTextBlock Text="{Binding Config.TarkovVersion, Mode=TwoWay}" Margin="0,10,10,0" VerticalAlignment="Center"/>
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="SIT Version:" Margin="0,10,10,0" VerticalAlignment="Center"/>
-							<SelectableTextBlock Text="{Binding SitVersion, Mode=TwoWay}" Margin="0,10,10,0" VerticalAlignment="Center"/>
+							<SelectableTextBlock Text="{Binding Config.SitVersion, Mode=TwoWay}" Margin="0,10,10,0" VerticalAlignment="Center"/>
 						</StackPanel>
 					</StackPanel>
 				</Border>
@@ -74,7 +74,7 @@
 									 MinWidth="397" 
 									 MaxWidth="425" 
 									 IsReadOnly="True"
-									 Text="{Binding AkiServerPath}"/>
+									 Text="{Binding Config.AkiServerPath}"/>
 							<Button Name="ChangeAkiServerPath" 
 									Content="Change" 
 									Margin="5" 
@@ -129,11 +129,11 @@
 									</Style>
 									<Style Selector="ToggleButton:checked /template/ ContentPresenter, ToggleButton:pressed /template/ ContentPresenter">
 										<Setter Property="Background"
-												Value="{Binding ConsoleFontColor, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"/>
+												Value="{Binding Config.ConsoleFontColor, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"/>
 									</Style>
 									<Style Selector="ToggleButton:checked /template/ ContentPresenter">
 										<Setter Property="BorderBrush"
-												Value="{Binding ConsoleFontColor, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"/>
+												Value="{Binding Config.ConsoleFontColor, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"/>
 									</Style>
 								</ToggleButton.Styles>
 								<Panel DockPanel.Dock="Top"
@@ -141,7 +141,7 @@
 									<Border BorderThickness="0" CornerRadius="0" />
 									<Border BorderThickness="0" CornerRadius="0" />
 									<Border BorderThickness="0" CornerRadius="0"
-											Background="{Binding ConsoleFontColor, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"/>
+											Background="{Binding Config.ConsoleFontColor, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"/>
 								</Panel>
 							</ToggleButton>
 							<Popup IsOpen="{Binding #ConsoleColorPopupButton.IsChecked, Mode=TwoWay}"
@@ -149,7 +149,7 @@
 								   PlacementMode="Pointer">
 								<Border Background="{DynamicResource ApplicationPageBackgroundThemeBrush}" 
 										CornerRadius="5">
-									<cp:ColorPicker Color="{Binding ConsoleFontColor, Mode=TwoWay}"/>
+									<cp:ColorPicker Color="{Binding Config.ConsoleFontColor, Mode=TwoWay}"/>
 								</Border>
 							</Popup>
 						</StackPanel>

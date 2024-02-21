@@ -119,7 +119,6 @@ namespace SIT.Manager.Avalonia.ViewModels
             ManagerConfig config = _managerConfigService.Config;
             config.AcceptedModsDisclaimer = true;
             _managerConfigService.UpdateConfig(config);
-            _managerConfigService.Save();
         }
 
         private async Task DownloadModPackage() {

@@ -1,4 +1,5 @@
 ﻿using SIT.Manager.Avalonia.Models;
+using System;
 
 namespace SIT.Manager.Avalonia.ManagedProcess
 {
@@ -6,7 +7,7 @@ namespace SIT.Manager.Avalonia.ManagedProcess
     {
         ManagerConfig Config { get; }
 
-        void Save(bool SaveAccount = false);
-        void UpdateConfig(ManagerConfig config);
+        void UpdateConfig(ManagerConfig config, bool ShouldSave = true, bool SaveAccount = false);
+        event EventHandler<ManagerConfig>? ConfigChanged;
     }
 }

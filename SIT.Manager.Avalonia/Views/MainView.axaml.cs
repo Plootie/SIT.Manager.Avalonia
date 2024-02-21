@@ -46,25 +46,6 @@ public partial class MainView : ReactiveUserControl<MainViewModel>
 
     }
 
-    //TODO: Add a confirmation to this. Not happy with it just starting the updater on click
-    private void UpdateButton_Click(object? sender, RoutedEventArgs e) {
-        //TODO: Add a way to update for linux users
-        if (OperatingSystem.IsWindows()) {
-            //TODO: Change this to use a const
-            string updaterPath = Path.Combine(AppContext.BaseDirectory, "SIT.Manager.Updater.exe");
-            if (File.Exists(updaterPath)) {
-                Process.Start(updaterPath);
-                IApplicationLifetime? lifetime = Application.Current?.ApplicationLifetime;
-                if (lifetime != null && lifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime) {
-                    desktopLifetime.Shutdown();
-                }
-                else {
-                    Environment.Exit(0);
-                }
-            }
-        }
-    }
-
     // I hate this so much, Please if someone knows of a better way to do this make a pull request. Even microsoft docs recommend this heathenry
     private void NavView_ItemInvoked(object? sender, NavigationViewItemInvokedEventArgs e) {
         string requestedPage = e.InvokedItem.ToString() ?? string.Empty;

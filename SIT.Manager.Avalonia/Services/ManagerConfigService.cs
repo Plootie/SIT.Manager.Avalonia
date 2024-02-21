@@ -16,6 +16,8 @@ namespace SIT.Manager.Avalonia.Services
             private set { _config = value; }
         }
 
+        public event EventHandler<ManagerConfig>? ConfigChanged;
+
         public ManagerConfigService() {
             Load();
         }
@@ -39,32 +41,32 @@ namespace SIT.Manager.Avalonia.Services
             }
         }
 
-        public void Save(bool SaveAccount = false) {
-            var options = new JsonSerializerOptions() {
+
+        public void UpdateConfig(ManagerConfig config, bool ShouldSave = true, bool SaveAccount = false) {
+            _config = config;
+
+            var options = new JsonSerializerOptions()
+            {
                 Converters = {
                     new ColorJsonConverter()
                 },
                 WriteIndented = true
             };
 
-            string managerConfigPath = Path.Combine(AppContext.BaseDirectory, "ManagerConfig.json");
-            Debug.WriteLine(managerConfigPath);
-
-            if (SaveAccount == false) {
+            if (ShouldSave)
+            {
                 ManagerConfig newLauncherConfig = _config;
-                newLauncherConfig.Username = string.Empty;
-                newLauncherConfig.Password = string.Empty;
+                if (!SaveAccount)
+                {
+                    newLauncherConfig.Username = string.Empty;
+                    newLauncherConfig.Password = string.Empty;
+                }
 
-                string json = JsonSerializer.Serialize(newLauncherConfig, options);
-                File.WriteAllText(managerConfigPath, json);
+                string managerConfigPath = Path.Combine(AppContext.BaseDirectory, "ManagerConfig.json");
+                File.WriteAllText(managerConfigPath, JsonSerializer.Serialize(newLauncherConfig, options));
             }
-            else {
-                File.WriteAllText(managerConfigPath, JsonSerializer.Serialize(_config, options));
-            }
-        }
 
-        public void UpdateConfig(ManagerConfig config) {
-            _config = config;
+            ConfigChanged?.Invoke(this, _config);
         }
     }
 }

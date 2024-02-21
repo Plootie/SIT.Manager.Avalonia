@@ -3,9 +3,11 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using SIT.Manager.Avalonia.Classes;
 using SIT.Manager.Avalonia.Classes.Exceptions;
+using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
 using System;
@@ -29,6 +31,7 @@ namespace SIT.Manager.Avalonia.ViewModels
         private const string SIT_DLL_FILENAME = "StayInTarkov.dll";
         private const string EFT_EXE_FILENAME = "EscapeFromTarkov.exe";
         private readonly IManagerConfigService _configService;
+        private readonly IServiceProvider _serviceProvider;
 
         [ObservableProperty]
         private string _lastServer;
@@ -55,7 +58,8 @@ namespace SIT.Manager.Avalonia.ViewModels
             HttpClient httpClient,
             HttpClientHandler httpClientHandler,
             ITarkovClientService tarkovClientService,
-            IAkiServerService akiServerService)
+            IAkiServerService akiServerService,
+            IServiceProvider serviceProvider)
         {
             _configService = configService;
             //TODO: Check that this is the best way to implement DI for the TarkovRequesting. Prettysure service provider would be better
@@ -63,6 +67,7 @@ namespace SIT.Manager.Avalonia.ViewModels
             _httpClientHandler = httpClientHandler;
             _tarkovClientService = tarkovClientService;
             _akiServerService = akiServerService;
+            _serviceProvider = serviceProvider;
 
             _lastServer = _configService.Config.LastServer;
             _username = _configService.Config.Username;
@@ -77,7 +82,7 @@ namespace SIT.Manager.Avalonia.ViewModels
         //TODO: Refactor this so avoid the repeat after registering. This also violates the one purpose rule anyway
         private async Task<string> LoginToServerAsync(Uri address)
         {
-            TarkovRequesting requesting = new(address, _httpClient, _httpClientHandler);
+            TarkovRequesting requesting = ActivatorUtilities.CreateInstance<TarkovRequesting>(_serviceProvider, address);
             TarkovLoginInfo loginInfo = new()
             {
                 Username = Username,
@@ -170,8 +175,7 @@ namespace SIT.Manager.Avalonia.ViewModels
             config.Password = Password;
             config.LastServer = LastServer;
             config.RememberLogin = RememberMe;
-            _configService.UpdateConfig(config);
-            _configService.Save(config.RememberLogin);
+            _configService.UpdateConfig(config, true, config.RememberLogin);
 
             Uri? serverAddress = GetUriFromAddress(LastServer);
 
