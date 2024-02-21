@@ -1,8 +1,10 @@
 using Avalonia.Styling;
 using FluentAvalonia.UI.Controls;
+using Microsoft.Extensions.DependencyInjection;
 using SIT.Manager.Avalonia.Models;
 using SIT.Manager.Avalonia.ViewModels.Dialogs;
 using System;
+using System.Net.Http;
 
 namespace SIT.Manager.Avalonia.Controls
 {
@@ -13,7 +15,7 @@ namespace SIT.Manager.Avalonia.Controls
         Type IStyleable.StyleKey => typeof(ContentDialog);
 
         public SelectServerVersionDialog() {
-            dc = new SelectServerVersionDialogViewModel();
+            dc = new SelectServerVersionDialogViewModel(App.Current.Services.GetService<HttpClient>());
             this.DataContext = dc;
             InitializeComponent();
         }
