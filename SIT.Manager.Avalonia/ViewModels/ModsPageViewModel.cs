@@ -1,6 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
 using System;
 using System.Collections.Generic;
@@ -10,8 +13,6 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Text.Json;
 using System.Threading.Tasks;
-using SIT.Manager.Avalonia.Interfaces;
-using SIT.Manager.Avalonia.ManagedProcess;
 
 namespace SIT.Manager.Avalonia.ViewModels
 {
@@ -19,6 +20,7 @@ namespace SIT.Manager.Avalonia.ViewModels
     {
         private readonly IBarNotificationService _barNotificationService;
         private readonly IManagerConfigService _managerConfigService;
+        private readonly ILogger _logger;
         private readonly IModService _modService;
 
         [ObservableProperty]
@@ -41,9 +43,10 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         public IAsyncRelayCommand UninstallModCommand { get; }
 
-        public ModsPageViewModel(IManagerConfigService managerConfigService, IBarNotificationService barNotificationService, IModService modService) {
+        public ModsPageViewModel(IManagerConfigService managerConfigService, IBarNotificationService barNotificationService, ILogger<ModsPageViewModel> logger, IModService modService) {
             _barNotificationService = barNotificationService;
             _managerConfigService = managerConfigService;
+            _logger = logger;
             _modService = modService;
 
             if (_managerConfigService.Config.AcceptedModsDisclaimer) {
@@ -126,13 +129,13 @@ namespace SIT.Manager.Avalonia.ViewModels
                 _barNotificationService.ShowError("Error", "Install Path is not set. Configure it in Settings.");
                 return;
             }
-            // Loggy.LogToFile("DownloadModPack: Starting download of mod package.");
+            _logger.LogInformation(("DownloadModPack: Starting download of mod package.");
 
             try {
                 await _modService.DownloadModsCollection();
             }
             catch (Exception ex) {
-                // TODO Loggy.LogToFile("DownloadModPack:\n" + ex.Message);
+                _logger.LogError(ex, $"DownloadModPack");
             }
 
             await LoadMasterList();
