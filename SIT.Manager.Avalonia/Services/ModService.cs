@@ -1,30 +1,29 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Layout;
 using FluentAvalonia.UI.Controls;
+using Microsoft.Extensions.Logging;
+using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using SIT.Manager.Avalonia.Interfaces;
-using SIT.Manager.Avalonia.ManagedProcess;
 
 namespace SIT.Manager.Avalonia.Services
 {
-    public class ModService : IModService
+    public class ModService(IBarNotificationService barNotificationService,
+                            IFileService filesService,
+                            IManagerConfigService configService,
+                            ILogger<ModService> logger) : IModService
     {
         private const string MOD_COLLECTION_URL = "https://github.com/stayintarkov/SIT-Mod-Ports/releases/latest/download/SIT.Mod.Ports.Collection.zip";
 
-        private readonly IBarNotificationService _barNotificationService;
-        private readonly IFileService _filesService;
-        private readonly IManagerConfigService _configService;
-
-        public ModService(IBarNotificationService barNotificationService, IFileService filesService, IManagerConfigService configService) {
-            _barNotificationService = barNotificationService;
-            _filesService = filesService;
-            _configService = configService;
-        }
+        private readonly IBarNotificationService _barNotificationService = barNotificationService;
+        private readonly IFileService _filesService = filesService;
+        private readonly IManagerConfigService _configService = configService;
+        private readonly ILogger<ModService> _logger = logger;
 
         public async Task DownloadModsCollection() {
             string modsDirectory = Path.Combine(_configService.Config.InstallPath, "SITLauncher", "Mods");
@@ -130,7 +129,7 @@ namespace SIT.Manager.Avalonia.Services
                 }
             }
             catch (Exception ex) {
-                // TODO Loggy.LogToFile("InstallMod: " + ex.Message);
+                _logger.LogError(ex, "InstallMod");
                 _barNotificationService.ShowError("Install Mod", $"{mod.Name} failed to install. Check your Launcher.log");
                 return false;
             }
@@ -198,7 +197,7 @@ namespace SIT.Manager.Avalonia.Services
                 _barNotificationService.ShowSuccess("Uninstall Mod", $"{mod.Name} was successfully uninstalled.");
             }
             catch (Exception ex) {
-                // TODO Loggy.LogToFile("UninstallMod: " + ex.Message);
+                _logger.LogError(ex, "UninstallMod");
                 _barNotificationService.ShowError("Uninstall Mod", $"{mod.Name} failed to uninstall. Check your Launcher.log");
                 return false;
             }

@@ -1,15 +1,18 @@
-﻿using PeNet;
+﻿using Microsoft.Extensions.Logging;
+using PeNet;
 using PeNet.Header.Resource;
+using SIT.Manager.Avalonia.Interfaces;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using SIT.Manager.Avalonia.Interfaces;
 
 namespace SIT.Manager.Avalonia.Services
 {
-    public partial class VersionService : IVersionService
+    public partial class VersionService(ILogger<VersionService> logger) : IVersionService
     {
+        private readonly ILogger<VersionService> _logger = logger;
+
         [GeneratedRegex("[0]{1,}\\.[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,2}\\-[0-9]{1,5}")]
         private static partial Regex EFTVersionRegex();
 
@@ -41,11 +44,11 @@ namespace SIT.Manager.Avalonia.Services
             string filePath = Path.Combine(path, "EscapeFromTarkov.exe");
             string fileVersion = GetFileProductVersionString(filePath);
             if (string.IsNullOrEmpty(fileVersion)) {
-                // TODO Loggy.LogToFile("CheckEFTVersion: File did not exist at " + filePath);
+                _logger.LogWarning("CheckEFTVersion: File did not exist at " + filePath);
             }
             else {
                 fileVersion = EFTVersionRegex().Match(fileVersion).Value.Replace("-", ".");
-                // TODO Loggy.LogToFile("EFT Version is now: " + fileVersion);
+                _logger.LogInformation("EFT Version is now: " + fileVersion);
             }
             return fileVersion;
         }
@@ -54,11 +57,11 @@ namespace SIT.Manager.Avalonia.Services
             string filePath = Path.Combine(path, "BepInEx", "plugins", "StayInTarkov.dll");
             string fileVersion = GetFileProductVersionString(filePath);
             if (string.IsNullOrEmpty(fileVersion)) {
-                // TODO Loggy.LogToFile("CheckSITVersion: File did not exist at " + filePath);
+                _logger.LogWarning("CheckSITVersion: File did not exist at " + filePath);
             }
             else {
                 fileVersion = SITVersionRegex().Match(fileVersion).Value.ToString();
-                // TODO Loggy.LogToFile("SIT Version is now: " + fileVersion);
+                _logger.LogInformation("SIT Version is now: " + fileVersion);
             }
             return fileVersion;
         }
