@@ -9,7 +9,7 @@ bool skipInteractivity = false;
 bool killProcNoPrompt = false;
 bool launchAfter = false;
 
-//args = ["-nointeract", "-nopromptkill"];
+//args = ["-nointeract", "-nopromptkill", "-launchafter"];
 HashSet<string> options = args.Select(x => x.ToLowerInvariant()).ToHashSet();
 skipInteractivity = options.Contains("-nointeract");
 killProcNoPrompt = options.Contains("-nopromptkill");
@@ -64,7 +64,8 @@ Directory.CreateDirectory(tempPath);
 string zipName = Path.GetFileName(SITMANAGER_RELEASE_URL);
 string zipPath = Path.Combine(tempPath, zipName);
 
-using(CLIProgressBar progressBar = new(30))
+int progressBarUpdateRate = 30;
+using(CLIProgressBar progressBar = new(progressBarUpdateRate))
 {
     try
     {
@@ -84,6 +85,7 @@ using(CLIProgressBar progressBar = new(30))
         }
         Environment.Exit(4);
     }
+    Thread.Sleep(1000 / (progressBarUpdateRate / 2));
 }
 
 Console.WriteLine("\nDownload complete.");
