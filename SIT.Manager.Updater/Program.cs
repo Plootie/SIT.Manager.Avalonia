@@ -10,27 +10,10 @@ bool killProcNoPrompt = false;
 bool launchAfter = false;
 
 //args = ["-nointeract", "-nopromptkill"];
-
-//TODO: Imrpove cmd arg system
-if (args.Length > 0)
-{
-    foreach (var arg in args)
-    {
-        string argStr = arg.ToLowerInvariant();
-        if (argStr.Equals("-nointeract"))
-        {
-            skipInteractivity = true;
-        }
-        else if (argStr.Equals("-nopromptkill"))
-        {
-            killProcNoPrompt = true;
-        }
-        else if (argStr.Equals("-launchAfter"))
-        {
-            launchAfter = true;
-        }
-    }
-}
+HashSet<string> options = args.Select(x => x.ToLowerInvariant()).ToHashSet();
+skipInteractivity = options.Contains("-nointeract");
+killProcNoPrompt = options.Contains("-nopromptkill");
+launchAfter = options.Contains("-launchafter");
 
 if (!skipInteractivity)
 {
