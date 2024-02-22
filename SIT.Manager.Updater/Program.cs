@@ -99,7 +99,7 @@ DirectoryInfo workingFolderInfo = new(workingDir);
 await workingFolderInfo.MoveSIT(backupPath);
 FileInfo configFile = new(Path.Combine(backupPath, "ManagerConfig.json"));
 if (configFile.Exists)
-    configFile.CopyTo(workingDir);
+    configFile.CopyTo(Path.Combine(workingFolderInfo.FullName, configFile.Name));
 
 Console.WriteLine("\nBackup complete. Extracting new version..\n");
 
