@@ -129,7 +129,7 @@ namespace SIT.Manager.Avalonia.ViewModels
                 _barNotificationService.ShowError("Error", "Install Path is not set. Configure it in Settings.");
                 return;
             }
-            _logger.LogInformation(("DownloadModPack: Starting download of mod package.");
+            _logger.LogInformation("DownloadModPack: Starting download of mod package.");
 
             try {
                 await _modService.DownloadModsCollection();
