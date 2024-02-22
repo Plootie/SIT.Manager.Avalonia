@@ -1,4 +1,5 @@
 ﻿using CG.Web.MegaApiClient;
+using Microsoft.Extensions.Logging;
 using SIT.Manager.Avalonia.Extentions;
 using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.ManagedProcess;
@@ -13,15 +14,11 @@ using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.Services
 {
-    public class FileService : IFileService
+    public class FileService(IActionNotificationService actionNotificationService, IManagerConfigService configService, ILogger<FileService> logger) : IFileService
     {
-        private readonly IActionNotificationService _actionNotificationService;
-        private readonly IManagerConfigService _configService;
-
-        public FileService(IActionNotificationService actionNotificationService, IManagerConfigService configService) {
-            _actionNotificationService = actionNotificationService;
-            _configService = configService;
-        }
+        private readonly IActionNotificationService _actionNotificationService = actionNotificationService;
+        private readonly IManagerConfigService _configService = configService;
+        private readonly ILogger<FileService> _logger = logger;
 
         private static async Task OpenAtLocation(string path) {
             // On Linux try using dbus first, if that fails then we use the default fallback method
@@ -64,7 +61,7 @@ namespace SIT.Manager.Avalonia.Services
         }
 
         private async Task<bool> DownloadMegaFile(string fileName, string fileUrl, bool showProgress) {
-            // TODO Loggy.LogToFile("Attempting to use Mega API.");
+            _logger.LogInformation("Attempting to use Mega API.");
             try {
                 MegaApiClient megaApiClient = new();
                 await megaApiClient.LoginAnonymousAsync();
@@ -74,7 +71,7 @@ namespace SIT.Manager.Avalonia.Services
                     return false;
                 }
 
-                // TODO Loggy.LogToFile($"Starting download of '{fileName}' from '{fileUrl}'");
+                _logger.LogInformation($"Starting download of '{fileName}' from '{fileUrl}'");
 
                 Progress<double> progress = new((prog) => {
                     _actionNotificationService.UpdateActionNotification(new ActionNotification($"Downloading '{fileName}'", Math.Floor(prog), showProgress));
@@ -109,7 +106,7 @@ namespace SIT.Manager.Avalonia.Services
                 result = await DownloadMegaFile(fileName, fileUrl, showProgress);
             }
             else {
-                // TODO  Loggy.LogToFile($"Starting download of '{fileName}' from '{fileUrl}'");
+                _logger.LogInformation($"Starting download of '{fileName}' from '{fileUrl}'");
                 filePath = Path.Combine(filePath, fileName);
                 if (File.Exists(filePath)) {
                     File.Delete(filePath);
@@ -134,7 +131,7 @@ namespace SIT.Manager.Avalonia.Services
                     result = true;
                 }
                 catch (Exception ex) {
-                    // TODO Loggy.LogToFile("DownloadFile: " + ex.Message);
+                    _logger.LogError(ex, "DownloadFile");
                 }
             }
 
@@ -186,7 +183,7 @@ namespace SIT.Manager.Avalonia.Services
                 }
             }
             catch (Exception ex) {
-                // TODO Loggy.LogToFile("ExtractFile: Error when opening Archive: " + ex.Message + "\n" + ex);
+                _logger.LogError(ex, "ExtractFile: Error when opening Archive");
             }
 
             _actionNotificationService.StopActionNotification();

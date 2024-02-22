@@ -43,7 +43,10 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         public IAsyncRelayCommand UninstallModCommand { get; }
 
-        public ModsPageViewModel(IManagerConfigService managerConfigService, IBarNotificationService barNotificationService, ILogger<ModsPageViewModel> logger, IModService modService) {
+        public ModsPageViewModel(IManagerConfigService managerConfigService,
+                                 IBarNotificationService barNotificationService,
+                                 ILogger<ModsPageViewModel> logger,
+                                 IModService modService) {
             _barNotificationService = barNotificationService;
             _managerConfigService = managerConfigService;
             _logger = logger;

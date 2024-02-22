@@ -43,7 +43,7 @@ public sealed partial class App : Application
 
         services.AddLogging(builder => {
             builder.AddConfiguration(configuration.GetSection("Logging"));
-            builder.AddFile(o => o.RootPath = AppContext.BaseDirectory);
+            builder.AddJsonFile(o => o.RootPath = AppContext.BaseDirectory);
         });
 
         // Services

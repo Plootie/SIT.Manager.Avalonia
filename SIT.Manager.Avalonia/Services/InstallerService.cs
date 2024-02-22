@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Layout;
 using FluentAvalonia.UI.Controls;
+using Microsoft.Extensions.Logging;
 using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
@@ -20,12 +21,14 @@ namespace SIT.Manager.Avalonia.Services
                                   IManagerConfigService configService,
                                   IFileService fileService,
                                   HttpClient httpClient,
+                                  ILogger<InstallerService> logger,
                                   IVersionService versionService) : IInstallerService
     {
         private readonly IBarNotificationService _barNotificationService = barNotificationService;
         private readonly IManagerConfigService _configService = configService;
         private readonly IFileService _fileService = fileService;
         private readonly HttpClient _httpClient = httpClient;
+        private readonly ILogger<InstallerService> _logger = logger;
         private readonly IVersionService _versionService = versionService;
 
         private static readonly Dictionary<int, string> _patcherResultMessages = new() {
@@ -43,7 +46,7 @@ namespace SIT.Manager.Avalonia.Services
         /// </summary>
         /// <returns></returns>
         public void CleanUpEFTDirectory() {
-            // TODO Loggy.LogToFile("Cleaning up EFT directory...");
+            _logger.LogInformation("Cleaning up EFT directory...");
             try {
                 string battlEyeDir = Path.Combine(_configService.Config.InstallPath, "BattlEye");
                 if (Directory.Exists(battlEyeDir)) {
@@ -71,9 +74,9 @@ namespace SIT.Manager.Avalonia.Services
                 }
             }
             catch (Exception ex) {
-                // TODO Loggy.LogToFile("Cleanup: " + ex.Message);
+                _logger.LogError(ex, "Cleanup");
             }
-            // TODO Loggy.LogToFile("Cleanup done.");
+            _logger.LogInformation("Cleanup done.");
         }
 
         /// <summary>
@@ -100,17 +103,17 @@ namespace SIT.Manager.Avalonia.Services
         /// <param name="sitVersionTarget"></param>
         /// <returns></returns>
         private async Task<bool> DownloadAndRunPatcher(string sitVersionTarget = "") {
-            // TODO Loggy.LogToFile("Downloading Patcher");
+            _logger.LogInformation("Downloading Patcher");
 
             if (string.IsNullOrEmpty(_configService.Config.TarkovVersion)) {
-                // TODO Loggy.LogToFile("DownloadPatcher: TarkovVersion is 'null'");
+                _logger.LogError("DownloadPatcher: TarkovVersion is 'null'");
                 return false;
             }
 
             string releasesString = await _httpClient.GetStringAsync(@"https://sitcoop.publicvm.com/api/v1/repos/SIT/Downgrade-Patches/releases");
             List<GiteaRelease>? giteaReleases = JsonSerializer.Deserialize<List<GiteaRelease>>(releasesString);
             if (giteaReleases == null) {
-                // TODO Loggy.LogToFile("DownloadPatcher: giteaReleases is 'null'");
+                _logger.LogError("DownloadPatcher: giteaReleases is 'null'");
                 return false;
             }
 
@@ -120,7 +123,7 @@ namespace SIT.Manager.Avalonia.Services
             string tarkovVersionToDowngrade = tarkovBuild != sitBuild ? tarkovBuild : "";
 
             if (string.IsNullOrEmpty(tarkovVersionToDowngrade)) {
-                // TODO Loggy.LogToFile("DownloadPatcher: tarkovVersionToDowngrade is 'null'");
+                _logger.LogError("DownloadPatcher: tarkovVersionToDowngrade is 'null'");
                 return false;
             }
 
@@ -140,33 +143,33 @@ namespace SIT.Manager.Avalonia.Services
             }
 
             if (patcherList.Count == 0 && _configService.Config.SitVersion != sitVersionTarget) {
-                // TODO Loggy.LogToFile("No applicable patcher found for the specified SIT version.");
+                _logger.LogError("No applicable patcher found for the specified SIT version.");
                 return false;
             }
 
             foreach (var patcher in patcherList) {
                 string mirrorsUrl = patcher.assets.Find(q => q.name == "mirrors.json")?.browser_download_url ?? string.Empty;
                 if (string.IsNullOrEmpty(mirrorsUrl)) {
-                    // TODO Loggy.LogToFile("No mirrors url found in mirrors.json.");
+                    _logger.LogError("No mirrors url found in mirrors.json.");
                     return false;
                 }
 
                 string mirrorsString = await _httpClient.GetStringAsync(mirrorsUrl);
                 List<Mirrors>? mirrors = JsonSerializer.Deserialize<List<Mirrors>>(mirrorsString);
                 if (mirrors == null || mirrors.Count == 0) {
-                    // TODO Loggy.LogToFile("No download mirrors found for patcher.");
+                    _logger.LogError("No download mirrors found for patcher.");
                     return false;
                 }
 
                 string selectedMirrorUrl = await ShowMirrorSelectionDialog(mirrors);
                 if (string.IsNullOrEmpty(selectedMirrorUrl)) {
-                    // TODO Loggy.LogToFile("Mirror selection was canceled or no mirror was selected.");
+                    _logger.LogWarning("Mirror selection was canceled or no mirror was selected.");
                     return false;
                 }
 
                 bool downloadSuccess = await _fileService.DownloadFile("Patcher.zip", _configService.Config.InstallPath, selectedMirrorUrl, true);
                 if (!downloadSuccess) {
-                    // TODO Loggy.LogToFile("Failed to download the patcher from the selected mirror.");
+                    _logger.LogError("Failed to download the patcher from the selected mirror.");
                     return false;
                 }
 
@@ -179,13 +182,13 @@ namespace SIT.Manager.Avalonia.Services
 
                 string patcherResult = await RunPatcher();
                 if (patcherResult != "Patcher was successful.") {
-                    // TODO Loggy.LogToFile($"Patcher failed: {patcherResult}");
+                    _logger.LogError($"Patcher failed: {patcherResult}");
                     return false;
                 }
             }
 
             // If execution reaches this point, it means all necessary patchers succeeded
-            // TODO Loggy.LogToFile("Patcher completed successfully.");
+            _logger.LogInformation("Patcher completed successfully.");
             return true;
         }
 
@@ -194,7 +197,7 @@ namespace SIT.Manager.Avalonia.Services
         /// </summary>
         /// <returns>string with result</returns>
         private async Task<string> RunPatcher() {
-            // TODO Loggy.LogToFile("Starting Patcher");
+            _logger.LogInformation("Starting Patcher");
             string patcherPath = Path.Combine(_configService.Config.InstallPath, "Patcher.exe");
             if (!File.Exists(patcherPath)) {
                 return $"Patcher.exe not found at {patcherPath}";
@@ -227,7 +230,7 @@ namespace SIT.Manager.Avalonia.Services
             }
 
             _patcherResultMessages.TryGetValue(patcherProcess.ExitCode, out string? patcherResult);
-            // TODO Loggy.LogToFile("RunPatcher: " + patcherResult);
+            _logger.LogInformation($"RunPatcher: {patcherResult}");
             return patcherResult ?? "Unknown error.";
         }
 
@@ -282,7 +285,7 @@ namespace SIT.Manager.Avalonia.Services
             }
 
             if (selectedVersion == null) {
-                // TODO Loggy.LogToFile("Install Server: selectVersion is 'null'");
+                _logger.LogWarning("Install Server: selectVersion is 'null'");
                 return;
             }
 
@@ -343,7 +346,7 @@ namespace SIT.Manager.Avalonia.Services
             }
             catch (Exception ex) {
                 // TODO ShowInfoBarWithLogButton("Install Error", "Encountered an error during installation.", InfoBarSeverity.Error, 10);
-                // TODO Loggy.LogToFile("Install Server: " + ex.Message + "\n" + ex);
+                _logger.LogError(ex, "Install Server");
             }
         }
 
@@ -354,7 +357,7 @@ namespace SIT.Manager.Avalonia.Services
             }
 
             if (selectedVersion == null) {
-                // TODO Loggy.LogToFile("InstallSIT: selectVersion is 'null'");
+                _logger.LogWarning("InstallSIT: selectVersion is 'null'");
                 return;
             }
 
@@ -434,7 +437,7 @@ namespace SIT.Manager.Avalonia.Services
             }
             catch (Exception ex) {
                 // TODO ShowInfoBarWithLogButton("Install Error", "Encountered an error during installation.", InfoBarSeverity.Error, 10);
-                // TODO Loggy.LogToFile("Install SIT: " + ex.Message + "\n" + ex);
+                _logger.LogError(ex, "Install SIT");
             }
         }
     }
