@@ -1,7 +1,9 @@
 ﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SIT.Manager.Avalonia.Classes;
 using SIT.Manager.Avalonia.Interfaces;
 using SIT.Manager.Avalonia.ManagedProcess;
@@ -34,6 +36,15 @@ public sealed partial class App : Application
     /// </summary>
     private static IServiceProvider ConfigureServices() {
         var services = new ServiceCollection();
+
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", true, true)
+            .Build();
+
+        services.AddLogging(builder => {
+            builder.AddConfiguration(configuration.GetSection("Logging"));
+            builder.AddFile(o => o.RootPath = AppContext.BaseDirectory);
+        });
 
         // Services
         services.AddSingleton<IActionNotificationService, ActionNotificationService>();
