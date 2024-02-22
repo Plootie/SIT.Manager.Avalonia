@@ -60,7 +60,7 @@ namespace SIT.Manager.Avalonia.Services
                     FileName = ExecutableFilePath,
                     WorkingDirectory = ExecutableDirectory,
                     UseShellExecute = false,
-                    StandardOutputEncoding = Encoding.UTF8,
+                    StandardOutputEncoding = cal ? null : Encoding.UTF8,
                     RedirectStandardOutput = !cal,
                     CreateNoWindow = !cal
                 },
