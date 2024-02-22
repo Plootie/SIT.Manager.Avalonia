@@ -10,7 +10,7 @@
 		<StackPanel>
 			<!--Address box-->
 			<Label Content="Address" Margin="10 10 10 0" FontFamily="{StaticResource BenderFont}" FontStyle="Oblique"/>
-			<TextBox Name="AddressBox" Text="{Binding LastServer, Mode=TwoWay}" Margin="10 5 10 10" Width="300" HorizontalAlignment="Left" Watermark="Enter Server Address..."/>
+			<TextBox Name="AddressBox" Text="{Binding LastServer, Mode=TwoWay}" Margin="10 5 10 10" Width="300" HorizontalAlignment="Left" Watermark="Enter Server Address..." PasswordChar="*" RevealPassword="{Binding $self.IsFocused}"/>
 			<!--Username box-->
 			<Label Content="Username" Margin="10 10 10 0" FontFamily="{StaticResource BenderFont}" FontStyle="Oblique"/>
 			<TextBox Name="UsernameBox" Text="{Binding Username, Mode=TwoWay}" Margin="10 5 10 10" Width="150" HorizontalAlignment="Left" Watermark="Enter Username..."/>
