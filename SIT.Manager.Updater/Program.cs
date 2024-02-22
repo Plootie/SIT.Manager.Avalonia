@@ -50,9 +50,9 @@ if(managerProcesses.Length > 0)
 string workingDir = AppDomain.CurrentDomain.BaseDirectory;
 if(!File.Exists(Path.Combine(workingDir, SITMANAGER_PROC_NAME)))
 {
-    if(!skipInteractivity)
+    Console.WriteLine("Unable to find '{0}' in root directory. Make sure the app is installed correctly.", SITMANAGER_PROC_NAME);
+    if (!skipInteractivity)
     {
-        Console.WriteLine("Unable to find '{0}' in root directory. Make sure the app is installed correctly.", SITMANAGER_PROC_NAME);
         Console.ReadKey();
     }
     Environment.Exit(3);
