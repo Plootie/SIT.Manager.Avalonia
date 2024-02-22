@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.Services
 {
@@ -53,14 +54,15 @@ namespace SIT.Manager.Avalonia.Services
                 return;
             }
 
+            bool cal = _configService.Config.CloseAfterLaunch;
             _process = new Process() {
                 StartInfo = new ProcessStartInfo() {
                     FileName = ExecutableFilePath,
                     WorkingDirectory = ExecutableDirectory,
                     UseShellExecute = false,
                     StandardOutputEncoding = Encoding.UTF8,
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true
+                    RedirectStandardOutput = !cal,
+                    CreateNoWindow = !cal
                 },
                 EnableRaisingEvents = true
             };
@@ -80,7 +82,16 @@ namespace SIT.Manager.Avalonia.Services
             _process.Exited += new EventHandler((sender, e) => ExitedEvent(sender, e));
 
             _process.Start();
-            _process.BeginOutputReadLine();
+            if(cal)
+            {
+                _ = Task.Run(() =>
+                {
+                    System.Threading.Thread.Sleep(10 * 1000);
+                    ServerStarted?.Invoke(this, new EventArgs());
+                });
+            }
+            else
+                _process.BeginOutputReadLine();
 
             UpdateRunningState(RunningState.Running);
         }
