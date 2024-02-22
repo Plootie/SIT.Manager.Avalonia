@@ -13,6 +13,7 @@ namespace SIT.Manager.Updater
         //TODO; Expose these for overwriting
         private static readonly char[] SpinnerChars = ['|', '/', '─', '\\', '|', '/', '─', '\\'];
         private static readonly char[] BarChars = ['[', '#', '-', ']'];
+        private readonly object consoleLocker = new object();
         private readonly System.Timers.Timer _timer;
         private readonly short _cursorPos;
         private readonly int _barLength;
@@ -38,41 +39,47 @@ namespace SIT.Manager.Updater
             _barLength = barLength;
         }
 
-        private void DrawProgress(object? state, ElapsedEventArgs e)
+        private void DrawProgress(object? state, ElapsedEventArgs? e)
         {
-            //Bar
-            int progressLength = _barLength - 2;
-            int progressPosition = (int)Math.Round(progressLength * _progress);
-            StringBuilder progressBarBuilder = new();
-            progressBarBuilder.Append(BarChars[0]);
-            progressBarBuilder.Append(new string(BarChars[1], progressPosition));
-            progressBarBuilder.Append(new string(BarChars[2], progressLength - progressPosition));
-            progressBarBuilder.Append(BarChars[3]);
-            progressBarBuilder.Append(new string(' ', 1));
-
-            //Percentage
-            progressBarBuilder.Append(string.Format("{0:P2} ", _progress));
-
-            //Progress spinner
-            if (DateTime.Now - _lastSpinnerChange > TimeSpan.FromMilliseconds(100))
+            lock(consoleLocker)
             {
-                _counter = ++_counter == SpinnerChars.Length ? (byte)0 : _counter;
-                _lastSpinnerChange = DateTime.Now;
-            }
-            char spinnerChar = SpinnerChars[_counter];
-            if(_progress != 1)
-                progressBarBuilder.Append(spinnerChar);
+                //Bar
+                int progressLength = _barLength - 2;
+                int progressPosition = (int)Math.Round(progressLength * _progress);
+                StringBuilder progressBarBuilder = new();
+                progressBarBuilder.Append(BarChars[0]);
+                progressBarBuilder.Append(new string(BarChars[1], progressPosition));
+                progressBarBuilder.Append(new string(BarChars[2], progressLength - progressPosition));
+                progressBarBuilder.Append(BarChars[3]);
+                progressBarBuilder.Append(new string(' ', 1));
 
-            //Drawing
-            Console.SetCursorPosition(_cursorPos, Console.CursorTop);
-            int lengthDiff = (progressBarBuilder.Length - _lastProgressLength) * -1;
-            _lastProgressLength = progressBarBuilder.Length;
-            progressBarBuilder.Append(new string(' ', lengthDiff < 0 ? 0 : lengthDiff));
-            Console.Write(progressBarBuilder);
+                //Percentage
+                progressBarBuilder.Append(string.Format("{0:P2} ", _progress));
+
+                //Progress spinner
+                if (DateTime.Now - _lastSpinnerChange > TimeSpan.FromMilliseconds(100))
+                {
+                    _counter = ++_counter == SpinnerChars.Length ? (byte)0 : _counter;
+                    _lastSpinnerChange = DateTime.Now;
+                }
+                char spinnerChar = SpinnerChars[_counter];
+                if (_progress != 1)
+                    progressBarBuilder.Append(spinnerChar);
+
+                //Drawing
+                Console.SetCursorPosition(_cursorPos, Console.CursorTop);
+                int lengthDiff = (progressBarBuilder.Length - _lastProgressLength) * -1;
+                _lastProgressLength = progressBarBuilder.Length;
+                progressBarBuilder.Append(new string(' ', lengthDiff < 0 ? 0 : lengthDiff));
+                Console.Write(progressBarBuilder);
+            }
         }
 
         public void Report(double value)
-            => Interlocked.Exchange(ref _progress, Math.Clamp(value, 0, 1));
+        {
+            Interlocked.Exchange(ref _progress, Math.Clamp(value, 0, 1));
+            DrawProgress(null, null);
+        }
 
         public void Dispose()
         {

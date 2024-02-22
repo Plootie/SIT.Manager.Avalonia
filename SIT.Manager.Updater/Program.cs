@@ -85,7 +85,6 @@ using(CLIProgressBar progressBar = new(progressBarUpdateRate))
         }
         Environment.Exit(4);
     }
-    Thread.Sleep(1000 / (progressBarUpdateRate / 2));
 }
 
 Console.WriteLine("\nDownload complete.");
