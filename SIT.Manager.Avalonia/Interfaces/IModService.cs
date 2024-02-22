@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SIT.Manager.Avalonia.Services
+namespace SIT.Manager.Avalonia.Interfaces
 {
     public interface IModService
     {

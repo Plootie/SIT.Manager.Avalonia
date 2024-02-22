@@ -1,10 +1,14 @@
 ﻿using CG.Web.MegaApiClient;
 using SIT.Manager.Avalonia.Extentions;
+using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace SIT.Manager.Avalonia.Services
@@ -17,6 +21,46 @@ namespace SIT.Manager.Avalonia.Services
         public FileService(IActionNotificationService actionNotificationService, IManagerConfigService configService) {
             _actionNotificationService = actionNotificationService;
             _configService = configService;
+        }
+
+        private static async Task OpenAtLocation(string path) {
+            // On Linux try using dbus first, if that fails then we use the default fallback method
+            if (OperatingSystem.IsLinux()) {
+                using Process dbusShowItemsProcess = new() {
+                    StartInfo = new ProcessStartInfo {
+                        FileName = "dbus-send",
+                        Arguments = $"--print-reply --dest=org.freedesktop.FileManager1 /org/freedesktop/FileManager1 org.freedesktop.FileManager1.ShowItems array:string:\"file://{path}\" string:\"\"",
+                        UseShellExecute = true
+                    }
+                };
+                dbusShowItemsProcess.Start();
+                await dbusShowItemsProcess.WaitForExitAsync();
+
+                if (dbusShowItemsProcess.ExitCode == 0) {
+                    // The dbus invocation can fail for a variety of reasons:
+                    // - dbus is not available
+                    // - no programs implement the service,
+                    // - ...
+                    return;
+                }
+            }
+
+            using (Process opener = new()) {
+                if (OperatingSystem.IsWindows()) {
+                    opener.StartInfo.FileName = "explorer.exe";
+                    opener.StartInfo.Arguments = path;
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
+                    opener.StartInfo.FileName = "explorer";
+                    opener.StartInfo.Arguments = $"-R {path}";
+                }
+                else {
+                    opener.StartInfo.FileName = path;
+                    opener.StartInfo.UseShellExecute = true;
+                }
+                opener.Start();
+                await opener.WaitForExitAsync();
+            }
         }
 
         private async Task<bool> DownloadMegaFile(string fileName, string fileUrl, bool showProgress) {
@@ -146,6 +190,24 @@ namespace SIT.Manager.Avalonia.Services
             }
 
             _actionNotificationService.StopActionNotification();
+        }
+
+        public async Task OpenDirectoryAsync(string path) {
+            if (!Directory.Exists(path)) {
+                // Directory doesn't exist so return early.
+                return;
+            }
+            path = Path.GetFullPath(path);
+            await OpenAtLocation(path);
+        }
+
+        public async Task OpenFileAsync(string path) {
+            if (!File.Exists(path)) {
+                // File doesn't exist so return early.
+                return;
+            }
+            path = Path.GetFullPath(path);
+            await OpenAtLocation(path);
         }
     }
 }

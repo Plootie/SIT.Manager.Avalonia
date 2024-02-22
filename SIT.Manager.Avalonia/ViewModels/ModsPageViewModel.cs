@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using ReactiveUI;
 using SIT.Manager.Avalonia.Models;
-using SIT.Manager.Avalonia.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,6 +10,8 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Text.Json;
 using System.Threading.Tasks;
+using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.ManagedProcess;
 
 namespace SIT.Manager.Avalonia.ViewModels
 {
@@ -118,7 +119,6 @@ namespace SIT.Manager.Avalonia.ViewModels
             ManagerConfig config = _managerConfigService.Config;
             config.AcceptedModsDisclaimer = true;
             _managerConfigService.UpdateConfig(config);
-            _managerConfigService.Save();
         }
 
         private async Task DownloadModPackage() {

@@ -1,25 +1,39 @@
 ﻿using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace SIT.Manager.Avalonia.Models
 {
-    public class ManagerConfig
+    public partial class ManagerConfig : ObservableObject
     {
-        public string LastServer { get; set; } = "http://127.0.0.1:6969";
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string InstallPath { get; set; } = string.Empty;
-        public string AkiServerPath { get; set; } = string.Empty;
-        public bool RememberLogin { get; set; } = false;
-        public bool CloseAfterLaunch { get; set; } = false;
-        public bool CloseServerOnClose { get; set; } = false;
-        public string TarkovVersion { get; set; } = string.Empty;
-        public string SitVersion { get; set; } = string.Empty;
-        public bool LookForUpdates { get; set; } = true;
-        public bool AcceptedModsDisclaimer { get; set; } = false;
+        [ObservableProperty]
+        public string _lastServer = "http://127.0.0.1:6969";
+        [ObservableProperty]
+        public string _username = string.Empty;
+        [ObservableProperty]
+        public string _password = string.Empty;
+        [ObservableProperty]
+        public string _installPath = string.Empty;
+        [ObservableProperty]
+        public string _akiServerPath = string.Empty;
+        [ObservableProperty]
+        public bool _rememberLogin = false;
+        [ObservableProperty]
+        public bool _closeAfterLaunch = false;
+        [ObservableProperty]
+        public string _tarkovVersion = string.Empty;
+        [ObservableProperty]
+        public string _sitVersion = string.Empty;
+        [ObservableProperty]
+        public bool _lookForUpdates = true;
+        [ObservableProperty]
+        public bool _acceptedModsDisclaimer = false;
         public string ModCollectionVersion { get; set; } = string.Empty;
         public Dictionary<string, string> InstalledMods { get; set; } = [];
-        public Color ConsoleFontColor { get; set; } = Colors.LightBlue;
-        public string ConsoleFontFamily { get; set; } = "Consolas";
+        [ObservableProperty]
+        private Color _consoleFontColor = Colors.LightBlue;
+        [ObservableProperty]
+        public string _consoleFontFamily = "Consolas";
     }
 }

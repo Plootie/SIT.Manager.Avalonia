@@ -1,7 +1,7 @@
 ﻿using SIT.Manager.Avalonia.Models;
 using System;
 
-namespace SIT.Manager.Avalonia.Services
+namespace SIT.Manager.Avalonia.Interfaces
 {
     public interface IActionNotificationService
     {

@@ -3,6 +3,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
+using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
 using SIT.Manager.Avalonia.Services;
 using System;
@@ -11,6 +12,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using static SIT.Manager.Avalonia.Services.AkiServerService;
 
 namespace SIT.Manager.Avalonia.ViewModels
@@ -23,10 +26,13 @@ namespace SIT.Manager.Avalonia.ViewModels
         private const int CONSOLE_LINE_LIMIT = 10_000;
 
         [GeneratedRegex("\\x1B(?:[@-Z\\\\-_]|\\[[0-?]*[ -/]*[@-~])")]
-        private static partial Regex ConsoleTextRemoveANSIFilterRegex();
+        internal static partial Regex ConsoleTextRemoveANSIFilterRegex();
 
         private readonly IAkiServerService _akiServerService;
         private readonly IManagerConfigService _configService;
+        private FontFamily cachedFontFamily = FontFamily.Parse("Bender");
+        private SolidColorBrush cachedColorBrush = new(Color.FromRgb(255, 255, 255));
+        private readonly IFileService _fileService;
 
         [ObservableProperty]
         private Symbol _startServerButtonSymbolIcon = Symbol.Play;
@@ -36,12 +42,38 @@ namespace SIT.Manager.Avalonia.ViewModels
 
         public ObservableCollection<ConsoleText> ConsoleOutput { get; } = [];
 
-        public ServerPageViewModel(IManagerConfigService configService, IAkiServerService akiServerService) {
-            _configService = configService;
+        public IAsyncRelayCommand EditServerConfigCommand { get; }
+
+        public ServerPageViewModel(IAkiServerService akiServerService, IManagerConfigService configService, IFileService fileService) {
             _akiServerService = akiServerService;
+            _configService = configService;
+            _fileService = fileService;
+
+            EditServerConfigCommand = new AsyncRelayCommand(EditServerConfig);
 
             _akiServerService.OutputDataReceived += AkiServer_OutputDataReceived;
             _akiServerService.RunningStateChanged += AkiServer_RunningStateChanged;
+            
+            UpdateCachedServerProperties(null, _configService.Config);
+            _configService.ConfigChanged += UpdateCachedServerProperties;
+            if(_akiServerService.State != RunningState.NotRunning)
+                AkiServer_RunningStateChanged(null, _akiServerService.State);
+        }
+
+        private void UpdateCachedServerProperties(object? sender, ManagerConfig newConfig)
+        {
+            
+            FontFamily newFont = FontManager.Current.SystemFonts.FirstOrDefault(x => x.Name == newConfig.ConsoleFontFamily, FontFamily.Parse("Bender"));
+            if(!newFont.Name.Equals(cachedFontFamily.Name))
+            {
+                cachedFontFamily = newFont;
+                foreach (ConsoleText textEntry in ConsoleOutput)
+                {
+                    textEntry.TextFont = cachedFontFamily;
+                }
+            }
+
+            cachedColorBrush.Color = newConfig.ConsoleFontColor;
         }
 
         private void AddConsole(string text) {
@@ -57,10 +89,11 @@ namespace SIT.Manager.Avalonia.ViewModels
             text = ConsoleTextRemoveANSIFilterRegex().Replace(text, "");
 
             ConsoleText consoleTextEntry = new() {
-                TextColor = new SolidColorBrush(_configService.Config.ConsoleFontColor),
-                TextFont = FontManager.Current.SystemFonts.FirstOrDefault(x => x.Name == _configService.Config.ConsoleFontFamily, FontFamily.Parse("Bender")),
-                Messagge = text
+                TextColor = cachedColorBrush,
+                TextFont = cachedFontFamily,
+                Message = text
             };
+
             ConsoleOutput.Add(consoleTextEntry);
         }
 
@@ -93,9 +126,14 @@ namespace SIT.Manager.Avalonia.ViewModels
             });
         }
 
-        [RelayCommand]
-        private void EditServerConfig() {
-            // TODO here so VS picks it up as it doesn't in XAML -- this literally does nothing and as far as I can see was never implemented in the current manager either
+        private async Task EditServerConfig() {
+            string serverPath = _configService.Config.AkiServerPath;
+            if (string.IsNullOrEmpty(serverPath)) {
+                return;
+            }
+
+            string serverConfigPath = Path.Combine(serverPath, "Aki_Data", "Server", "configs");
+            await _fileService.OpenDirectoryAsync(serverConfigPath);
         }
 
         [RelayCommand]
@@ -106,7 +144,7 @@ namespace SIT.Manager.Avalonia.ViewModels
                     return;
                 }
 
-                if (!File.Exists(_akiServerService.ServerFilePath)) {
+                if (!File.Exists(_akiServerService.ExecutableFilePath)) {
                     AddConsole("SPT-AKI not found. Please configure the SPT-AKI path in Settings tab before starting the server.");
                     return;
                 }

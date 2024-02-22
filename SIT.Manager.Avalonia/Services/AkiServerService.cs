@@ -1,61 +1,45 @@
-﻿using System;
+﻿using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.ManagedProcess;
+using SIT.Manager.Avalonia.ViewModels;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 
 namespace SIT.Manager.Avalonia.Services
 {
-    public class AkiServerService : IAkiServerService
+    public class AkiServerService(IBarNotificationService barNotificationService,
+                                  IManagerConfigService configService) : ManagedProcess.ManagedProcess(barNotificationService, configService), IAkiServerService
     {
         private const string SERVER_EXE = "Aki.Server.exe";
-
-        public enum RunningState
-        {
-            NotRunning,
-            Running,
-            StoppedUnexpectedly
-        }
-
-        private readonly IManagerConfigService _configService;
-
-        private Process? _serverProcess;
-        private bool _stopRequest = false;
-
-        private string ServerDirectory => !string.IsNullOrEmpty(_configService.Config.AkiServerPath) ? _configService.Config.AkiServerPath : string.Empty;
-
-        public string ServerFilePath => !string.IsNullOrEmpty(ServerDirectory) ? Path.Combine(ServerDirectory, SERVER_EXE) : string.Empty;
-
-        public RunningState State { get; private set; } = RunningState.NotRunning;
-
+        protected override string EXECUTABLE_NAME => SERVER_EXE;
+        public override string ExecutableDirectory => !string.IsNullOrEmpty(_configService.Config.AkiServerPath) ? _configService.Config.AkiServerPath : string.Empty;
         public event EventHandler<DataReceivedEventArgs>? OutputDataReceived;
-        public event EventHandler<RunningState>? RunningStateChanged;
+        public event EventHandler? ServerStarted;
+        public bool IsStarted { get; private set; } = false;
 
-        public AkiServerService(IManagerConfigService configService) {
-            _configService = configService;
-        }
-
-        private void ExitedEvent(object? sender, EventArgs e) {
-            if (State == RunningState.Running && !_stopRequest) {
-                State = RunningState.StoppedUnexpectedly;
+        public override void ClearCache() {
+            string serverPath = _configService.Config.AkiServerPath;
+            if (!string.IsNullOrEmpty(serverPath)) {
+                // Combine the serverPath with the additional subpath.
+                string serverCachePath = Path.Combine(serverPath, "user", "cache");
+                if (Directory.Exists(serverCachePath)) {
+                    Directory.Delete(serverCachePath, true);
+                }
+                Directory.CreateDirectory(serverCachePath);
             }
-            else {
-                State = RunningState.NotRunning;
-            }
-
-            _stopRequest = false;
-            RunningStateChanged?.Invoke(this, State);
         }
 
         public bool IsUnhandledInstanceRunning() {
             Process[] akiServerProcesses = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SERVER_EXE));
 
             if (akiServerProcesses.Length > 0) {
-                if (_serverProcess == null || _serverProcess.HasExited) {
+                if (_process == null || _process.HasExited) {
                     return true;
                 }
 
                 foreach (Process akiServerProcess in akiServerProcesses) {
-                    if (_serverProcess.Id != akiServerProcess.Id) {
+                    if (_process.Id != akiServerProcess.Id) {
                         return true;
                     }
                 }
@@ -64,15 +48,15 @@ namespace SIT.Manager.Avalonia.Services
             return false;
         }
 
-        public void Start() {
+        public override void Start(string? arguments = null) {
             if (State == RunningState.Running) {
                 return;
             }
 
-            _serverProcess = new Process() {
+            _process = new Process() {
                 StartInfo = new ProcessStartInfo() {
-                    FileName = ServerFilePath,
-                    WorkingDirectory = ServerDirectory,
+                    FileName = ExecutableFilePath,
+                    WorkingDirectory = ExecutableDirectory,
                     UseShellExecute = false,
                     StandardOutputEncoding = Encoding.UTF8,
                     RedirectStandardOutput = true,
@@ -81,31 +65,24 @@ namespace SIT.Manager.Avalonia.Services
                 EnableRaisingEvents = true
             };
 
-            _serverProcess.OutputDataReceived += new DataReceivedEventHandler((sender, e) => OutputDataReceived?.Invoke(sender, e));
-            _serverProcess.Exited += new EventHandler((sender, e) => ExitedEvent(sender, e));
+            _process.OutputDataReceived += new DataReceivedEventHandler((sender, e) => OutputDataReceived?.Invoke(sender, e));
+            DataReceivedEventHandler? startedEventHandler = null;
+            startedEventHandler = new DataReceivedEventHandler((sender, e) => {
+                if (ServerPageViewModel.ConsoleTextRemoveANSIFilterRegex()
+                .Replace(e.Data ?? string.Empty, "")
+                .Equals("Server is running, do not close while playing SPT, Happy playing!!", StringComparison.InvariantCultureIgnoreCase)) {
+                    IsStarted = true;
+                    ServerStarted?.Invoke(sender, e);
+                    _process.OutputDataReceived -= startedEventHandler;
+                }
+            });
+            _process.OutputDataReceived += startedEventHandler;
+            _process.Exited += new EventHandler((sender, e) => ExitedEvent(sender, e));
 
-            _serverProcess.Start();
-            _serverProcess.BeginOutputReadLine();
+            _process.Start();
+            _process.BeginOutputReadLine();
 
-            State = RunningState.Running;
-
-            RunningStateChanged?.Invoke(this, State);
-        }
-
-        public void Stop() {
-            if (State == RunningState.NotRunning || _serverProcess == null || _serverProcess.HasExited) {
-                return;
-            }
-
-            _stopRequest = true;
-
-            // Stop the server process
-            bool clsMsgSent = _serverProcess.CloseMainWindow();
-            if (!clsMsgSent)
-                _serverProcess.Kill();
-
-            _serverProcess.WaitForExit();
-            _serverProcess.Close();
+            UpdateRunningState(RunningState.Running);
         }
     }
 }

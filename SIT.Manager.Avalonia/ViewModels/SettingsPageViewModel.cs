@@ -2,10 +2,12 @@
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SIT.Manager.Avalonia.Interfaces;
+using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Models;
-using SIT.Manager.Avalonia.Services;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -16,39 +18,12 @@ namespace SIT.Manager.Avalonia.ViewModels;
 public partial class SettingsPageViewModel : ViewModelBase
 {
     private readonly IManagerConfigService _configsService;
-    private readonly IFolderPickerService _folderPickerService;
     private readonly IBarNotificationService _barNotificationService;
+    private readonly IPickerDialogService _pickerDialogService;
     private readonly IVersionService _versionService;
 
     [ObservableProperty]
-    private bool _closeAfterLaunch;
-
-    [ObservableProperty]
-    private bool _lookForUpdates;
-
-    [ObservableProperty]
-    private bool _closeServerOnClose;
-
-    [ObservableProperty]
-    private string _managerVersionString;
-
-    [ObservableProperty]
-    private string _installPath;
-
-    [ObservableProperty]
-    private string _tarkovVersion;
-
-    [ObservableProperty]
-    private string _sitVersion;
-
-    [ObservableProperty]
-    private string _akiServerPath;
-
-    [ObservableProperty]
-    private string _consoleFontFamily;
-
-    [ObservableProperty]
-    private Color _consoleFontColor;
+    private ManagerConfig _config;
 
     [ObservableProperty]
     private FontFamily _selectedConsoleFontFamily;
@@ -56,34 +31,30 @@ public partial class SettingsPageViewModel : ViewModelBase
     [ObservableProperty]
     private List<FontFamily> _installedFonts;
 
+    [ObservableProperty]
+    private string _managerVersionString;
+
     public IAsyncRelayCommand ChangeInstallLocationCommand { get; }
 
     public IAsyncRelayCommand ChangeAkiServerLocationCommand { get; }
 
     public SettingsPageViewModel(IManagerConfigService configService,
                                  IBarNotificationService barNotificationService,
-                                 IFolderPickerService folderPickerService,
+                                 IPickerDialogService pickerDialogService,
                                  IVersionService versionService) {
         _configsService = configService;
-        _folderPickerService = folderPickerService;
+        _pickerDialogService = pickerDialogService;
         _barNotificationService = barNotificationService;
         _versionService = versionService;
 
-        _closeAfterLaunch = _configsService.Config.CloseAfterLaunch;
-        _closeServerOnClose = _configsService.Config.CloseServerOnClose;
-        _lookForUpdates = _configsService.Config.LookForUpdates;
-        _installPath = _configsService.Config.InstallPath;
-        _tarkovVersion = _configsService.Config.TarkovVersion;
-        _sitVersion = _configsService.Config.SitVersion;
-        _akiServerPath = _configsService.Config.AkiServerPath;
-        _consoleFontFamily = _configsService.Config.ConsoleFontFamily;
-        _consoleFontColor = _configsService.Config.ConsoleFontColor;
+        _config = _configsService.Config;
+        _config.PropertyChanged += (o, e) => OnPropertyChanged(e);
 
         List<FontFamily> installedFonts = [.. FontManager.Current.SystemFonts];
         installedFonts.Add(FontFamily.Parse("Bender"));
         _installedFonts = [.. installedFonts.OrderBy(x => x.Name)];
 
-        _selectedConsoleFontFamily = InstalledFonts.FirstOrDefault(x => x.Name == ConsoleFontFamily, FontFamily.Parse("Bender"));
+        _selectedConsoleFontFamily = InstalledFonts.FirstOrDefault(x => x.Name == _config.ConsoleFontFamily, FontFamily.Parse("Bender"));
 
         _managerVersionString = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N/A";
 
@@ -92,27 +63,15 @@ public partial class SettingsPageViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Parse the directory path we get from the folder picker 
-    /// </summary>
-    /// <param name="path">The folder picker path</param>
-    /// <returns>A cleaned ready to use path</returns>
-    private static string ParseFolderPickerPath(string path) {
-        // For some reason the abolute path returns spaces as the %20 escape code
-        string filteredPath = path.Replace("%20", " ");
-        return filteredPath;
-    }
-
-    /// <summary>
     /// Gets the path containing the required filename based on the folder picker selection from a user
     /// </summary>
     /// <param name="filename">The filename to look for in the user specified directory</param>
     /// <returns>The path if the file exists, otherwise an empty string</returns>
     private async Task<string> GetPathLocation(string filename) {
-        IStorageFolder? folderSelected = await _folderPickerService.OpenFolderAsync();
-        if (folderSelected != null) {
-            string directoryPath = ParseFolderPickerPath(folderSelected.Path.AbsolutePath);
-            if (File.Exists(Path.Combine(directoryPath, filename))) {
-                return directoryPath;
+        IStorageFolder? directorySelected = await _pickerDialogService.GetDirectoryFromPickerAsync();
+        if (directorySelected != null) {
+            if (File.Exists(Path.Combine(directorySelected.Path.LocalPath, filename))) {
+                return directorySelected.Path.LocalPath;
             }
         }
         return string.Empty;
@@ -121,9 +80,9 @@ public partial class SettingsPageViewModel : ViewModelBase
     private async Task ChangeInstallLocation() {
         string targetPath = await GetPathLocation("EscapeFromTarkov.exe");
         if (!string.IsNullOrEmpty(targetPath)) {
-            InstallPath = targetPath;
-            TarkovVersion = _versionService.GetEFTVersion(targetPath);
-            SitVersion = _versionService.GetSITVersion(targetPath);
+            Config.InstallPath = targetPath;
+            Config.TarkovVersion = _versionService.GetEFTVersion(targetPath);
+            Config.SitVersion = _versionService.GetSITVersion(targetPath);
             _barNotificationService.ShowInformational("Config", $"EFT installation path set to '{targetPath}'");
         }
         else {
@@ -134,7 +93,7 @@ public partial class SettingsPageViewModel : ViewModelBase
     private async Task ChangeAkiServerLocation() {
         string targetPath = await GetPathLocation("Aki.Server.exe");
         if (!string.IsNullOrEmpty(targetPath)) {
-            AkiServerPath = targetPath;
+            Config.AkiServerPath = targetPath;
             _barNotificationService.ShowInformational("Config", $"SPT-AKI installation path set to '{targetPath}'");
         }
         else {
@@ -143,24 +102,12 @@ public partial class SettingsPageViewModel : ViewModelBase
     }
 
     partial void OnSelectedConsoleFontFamilyChanged(FontFamily value) {
-        ConsoleFontFamily = value.Name;
+        Config.ConsoleFontFamily = value.Name;
     }
 
     protected override void OnPropertyChanged(PropertyChangedEventArgs e) {
         base.OnPropertyChanged(e);
 
-        ManagerConfig config = _configsService.Config;
-        config.CloseAfterLaunch = CloseAfterLaunch;
-        config.LookForUpdates = LookForUpdates;
-        config.CloseServerOnClose = CloseServerOnClose;
-        config.InstallPath = InstallPath;
-        config.TarkovVersion = TarkovVersion;
-        config.SitVersion = SitVersion;
-        config.AkiServerPath = AkiServerPath;
-        config.ConsoleFontFamily = ConsoleFontFamily;
-        config.ConsoleFontColor = ConsoleFontColor;
-
-        _configsService.UpdateConfig(config);
-        _configsService.Save();
+        _configsService.UpdateConfig(Config);
     }
 }

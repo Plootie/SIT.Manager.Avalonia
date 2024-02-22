@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using SIT.Manager.Avalonia.ManagedProcess;
 using SIT.Manager.Avalonia.Services;
 using System;
 
@@ -17,12 +18,7 @@ public partial class MainWindow : Window
 
     private void Window_Closed(object? sender, EventArgs e) {
         IAkiServerService? akiServerService = App.Current.Services.GetService<IAkiServerService>();
-        IManagerConfigService? managerConfigService = App.Current.Services.GetService<IManagerConfigService>();
-        if (akiServerService != null && akiServerService.State == AkiServerService.RunningState.Running)
-        {
-            //This logic looks a little funky but its just so that if the config services is null we default close it anyway
-            if (managerConfigService != null && (!managerConfigService.Config.CloseServerOnClose || managerConfigService.Config.CloseAfterLaunch))
-                return;
+        if (akiServerService != null && akiServerService.State == RunningState.Running) {
             akiServerService.Stop();
         }
     }
