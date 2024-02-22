@@ -18,8 +18,10 @@ public partial class MainWindow : Window
 
     private void Window_Closed(object? sender, EventArgs e) {
         IAkiServerService? akiServerService = App.Current.Services.GetService<IAkiServerService>();
-        if (akiServerService != null && akiServerService.State == RunningState.Running) {
-            //akiServerService.Stop();
+        IManagerConfigService? managerConfig = App.Current.Services.GetService<IManagerConfigService>();
+        if (akiServerService?.State == RunningState.Running && (!managerConfig?.Config.CloseAfterLaunch ?? true))
+        {
+            akiServerService?.Stop();
         }
     }
 }
