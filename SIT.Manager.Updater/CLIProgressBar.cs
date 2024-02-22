@@ -60,7 +60,8 @@ namespace SIT.Manager.Updater
                 _lastSpinnerChange = DateTime.Now;
             }
             char spinnerChar = SpinnerChars[_counter];
-            progressBarBuilder.Append(spinnerChar);
+            if(_progress != 1)
+                progressBarBuilder.Append(spinnerChar);
 
             //Drawing
             Console.SetCursorPosition(_cursorPos, Console.CursorTop);
