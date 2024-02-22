@@ -11,7 +11,7 @@ bool launchAfter = false;
 
 //args = ["-nointeract", "-nopromptkill", "-launchafter"];
 HashSet<string> options = args.Select(x => x.ToLowerInvariant()).ToHashSet();
-skipInteractivity = options.Contains("-nointeract");
+skipInteractivity = options.Contains("-nointeract") || (Console.IsOutputRedirected && !Console.IsInputRedirected);
 killProcNoPrompt = options.Contains("-nopromptkill");
 launchAfter = options.Contains("-launchafter");
 
