@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: SupportedOSPlatform("windows")]
+[assembly: SupportedOSPlatform("linux")]
 
 // Setting ComVisible to false makes the types in this assembly not visible to COM
 // components.  If you need to access a type in this assembly from COM, set the ComVisible
